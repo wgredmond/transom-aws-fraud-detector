@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+
+	<event name="adminhtml_customer_save_after">
+        <observer name="transom_aws_fraud_detector_create_account_backend" instance="WGRedmond\FraudFighter\Observer\Events\CreateAccountBackendEvent" />
+    </event>
+
+</config>

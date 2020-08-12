@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+
+<event name="sales_order_place_before">
+        <observer name="transom_aws_fraud_detector_create_order"
+                  instance="Transom\AWSFraudDetector\Observer\Events\CreateOrderEvent"/>
+    </event>
+
+    <event name="sales_order_payment_place_start">
+        <observer name="transom_aws_fraud_detector_payment_place_start"
+                  instance="Transom\AWSFraudDetector\Observer\Events\TransactionStartEvent"/>
+    </event>
+
+    <event name="sales_order_payment_place_end">
+        <observer name="transom_aws_fraud_detector_payment_place_end"
+                  instance="Transom\AWSFraudDetector\Observer\Events\TransactionEvent"/>
+    </event>
+
+</config>

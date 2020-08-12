@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+
+    <event name="customer_register_success">
+        <observer name="transom_aws_fraud_detector_create_account"
+                  instance="Transom\AWSFraudDetector\Observer\Events\CreateAccountEvent"/>
+    </event>
+
+    <event name="customer_login">
+        <observer name="transom_aws_fraud_detector_account_login"
+                  instance="Transom\AWSFraudDetector\Observer\Events\AccountLoginEvent"/>
+    </event>
+
+    <event name="customer_logout">
+        <observer name="transom_aws_fraud_detector_account_logout"
+                  instance="Transom\AWSFraudDetector\Observer\Events\AccountLogoutEvent"/>
+    </event>
+
+</config>
