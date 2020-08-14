@@ -1,6 +1,15 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
     <menu>
-        <add id="Transom_AWSFraudDetector::config" title="AWS Fraud Detector" module="Transom_AWSFraudDetector" parent="Magento_Sales::fraud_protection" sortOrder="10" />
+        <add id="Transom_AWSFraudDetector::config" title="AWS Fraud Detector" translate="title" module="Transom_AWSFraudDetector" parent="Magento_Sales::sales" sortOrder="40" dependsOnModule="Transom_AWSFraudDetector" resource="Transom_AWSFraudDetector::config"/>
+        <add id="Transom_AWSFraudDetector::config_form" title="Configuration" translate="title" module="Transom_AWSFraudDetector" parent="Transom_AWSFraudDetector::config" sortOrder="10" dependsOnModule="Transom_AWSFraudDetector" action="config/config" resource="Transom_AWSFraudDetector::config"/>
     </menu>
 </config>
+
+<!--
+Magento_Sales::fraud_protection
+Magento_Customer::customer
+
+Good Resource:
+https://www.toptal.com/magento/magento-2-tutorial-building-a-complete-module
+-->
