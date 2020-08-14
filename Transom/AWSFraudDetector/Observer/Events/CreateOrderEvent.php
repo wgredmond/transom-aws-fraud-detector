@@ -10,7 +10,9 @@
 
 namespace Transom\AWSFraudDetector\Observer\Events;
 
+use DateTime;
 use Magento\Framework\Event\ObserverInterface;
+use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 use Psr\Log\LoggerInterface;
 use Aws\FraudDetector\FraudDetectorClient;
 
@@ -23,10 +25,26 @@ class CreateOrderEvent implements ObserverInterface
      */
     protected $logger;
 
-    public function __construct(\Psr\Log\LoggerInterface $logger)
+    /**
+     * @var DateTime
+     */
+    protected $eventDate;
+
+
+    /**
+     * @var \Magento\Framework\HTTP\PhpEnvironment\RemoteAddress
+     */
+    private $remoteAddress;
+
+    public function __construct(LoggerInterface $logger,
+                                DateTime $eventDate,
+                                RemoteAddress $remoteAddress)
     {
         $this->logger = $logger;
+        $this->eventDate =  $eventDate;
+        $this->remoteAddress = $remoteAddress;
     }
+
 
     /**
      * @param \Magento\Framework\Event\Observer $observer
@@ -52,19 +70,139 @@ class CreateOrderEvent implements ObserverInterface
         $this->logger->info('1');
         //$this->logger->info($client);
 
-        $result = $client->GetDetectors([
-            'detectorId' => 'crs_demo_order', // REQUIRED
+        //'detectorId' => 'crs_demo_order', // REQUIRED
+        $detectors_result = $client->GetDetectors([
             'maxResults' => 10
         ]);
         $this->logger->info('2');
-        $this->logger->info($result);
+        $this->logger->info($detectors_result);
 
-        /*
-        {
-            "detectorId": "string",
-           "maxResults": number,
-           "nextToken": "string"
+        // get order
+        $order = $observer->getEvent()->getOrder();
+        $this->logger->info('3.1');
+
+        // If order data is empty then doesn't need to process
+//        if (empty($order)) {
+//            $this->logger->info('There is an error in CreateOrderEvent');
+//            return $this;
+//        }
+//        $this->logger->info('3.2');
+
+        //Order main info
+        $orderId           = $order->getIncrementId();
+        $orderAmount       = $order->getGrandTotal();
+        $orderCurrency     = $order->getOrderCurrencyCode();
+        $this->logger->info('3.3 -- orderId = ' . $orderId);
+        $this->logger->info('3.3 -- orderAmount = ' . $orderAmount);
+        $this->logger->info('3.3 -- orderCurrency = ' . $orderCurrency);
+        $this->logger->info('3.3 -- $orderId = ' . $orderId);
+
+        //Customer main info
+        $customerId        = $order->getCustomerId();
+        $customerEmail     = $order->getCustomerEmail();
+        //$session            = $this->customerSession->getMyValue();
+        $userAgent     = $_SERVER ['HTTP_USER_AGENT'];
+        $this->logger->info('3.4 -- customerId = ' . $customerId);
+        $this->logger->info('3.4 -- customerEmail = ' . $customerEmail);
+
+        //Billing Address details
+        $billingAddress     = $order->getBillingAddress();
+        $billingFirstName   = $billingAddress->getFirstname();
+        $billingLastName    = $billingAddress->getLastName();
+        $billingName        = $billingFirstName." ".$billingLastName;
+        $billingTelephone   = $billingAddress->getTelephone();
+        $billingStreet      = $billingAddress->getStreet();
+        $billingAddress1    = $billingStreet[0];
+        $billingAddress2    = "";
+        if(isset($billingStreet[1])){
+            $billingAddress2 = $billingStreet[1];
         }
-        */
+        $billingCity        = $billingAddress->getCity();
+        $billingRegion      = $billingAddress->getRegion();
+        $billingCountry     = $billingAddress->getCountryId();
+        $billingZipCode     = $billingAddress->getPostcode();
+        $this->logger->info('3.5 -- billingName = ' . $billingName);
+        $this->logger->info('3.5 -- billingZipCode = ' . $billingZipCode);
+
+        //Shipping Address details
+        $shippingAddress    = $order->getShippingAddress();
+        $shippingFirstName  = $shippingAddress->getFirstname();
+        $shippingLastName   = $shippingAddress->getLastName();
+        $shippingName       = $shippingFirstName." ".$shippingLastName;
+        $shippingTelephone  = $shippingAddress->getTelephone();
+        $shippingStreet     = $shippingAddress->getStreet();
+        $shippingAddress1   = $shippingStreet[0];
+        $shippingAddress2   = "";
+        if(isset($shippingStreet[1])){
+            $shippingAddress2 = $shippingStreet[1];
+        }
+        $shippingCity       = $shippingAddress->getCity();
+        $shippingRegion     = $shippingAddress->getRegion();
+        $shippingCountry    = $shippingAddress->getCountryId();
+        $shippingZipCode    = $shippingAddress->getPostcode();
+        $this->logger->info('3.6 -- shippingName = ' . $shippingName);
+        $this->logger->info('3.6 -- shippingZipCode = ' . $shippingZipCode);
+
+        $eventTime = $this->eventDate->format('Y-m-d\TH:i:s.').gettimeofday()['usec'] . 'Z';
+        $eventId = $orderId . '-' . $this->eventDate->format('Y-m-d_H-i-s-').gettimeofday()['usec'];
+
+        $this->logger->info('3.7 -- eventTime = ' . $eventTime);
+        $this->logger->info('3.7 -- eventId = ' . $eventId);
+
+        $ipAddress = $this->remoteAddress->getRemoteAddress();
+        $this->logger->info('3.8 -- ipAddress = ' . $ipAddress);
+        $this->logger->info('3.8 -- userAgent = ' . $userAgent);
+
+        $result = $client->GetEventPrediction([
+            'detectorId' => 'fraud_order',
+            'eventId' => $eventId,
+            'eventTypeName' => "create_order",
+            'eventTimestamp'    => $eventTime,
+            'entities' => [[
+                'entityType'    => 'customer',
+                'entityId'      => $customerId
+            ]],
+            'eventVariables' => [
+                'order_id'          => $orderId,
+                'user_id'           => $customerId,
+                'email_address'     => $customerEmail,
+                'user_name'         => $billingName,
+
+                'billing_name'         => $billingName,
+                'billing_address_1'    => $billingAddress1,
+                'billing_city'         => $billingCity,
+                'billing_state'        => $billingRegion,
+                'billing_zip'          => $billingZipCode,
+                'billing_country'      => $billingCountry,
+                'billing_phone_number' => $billingTelephone,
+
+                'shipping_name'         => $shippingName,
+                'shipping_address_1'    => $shippingAddress1,
+                'shipping_city'         => $shippingCity,
+                'shipping_state'        => $shippingRegion,
+                'shipping_zip'          => $shippingZipCode,
+                'shipping_country'      => $shippingCountry,
+                'shipping_phone_number' => $shippingTelephone,
+
+                'payment_instrument_type'  => 'credit_card',
+//                //'credit_card_type'        => '...',
+                'total_order_price'        => strval($orderAmount),
+                'currency_code'            => $orderCurrency,
+
+                'event_timestamp' => $eventTime,
+                'ip_address'      => $ipAddress,
+                'user_agent'      => $userAgent
+            ]
+        ]);
+
+        // Error executing "GetEventPrediction" on "https://frauddetector.us-east-1.amazonaws.com"; A
+        //WS HTTP error: Client error: `POST https://frauddetector.us-east-1.amazonaws.com` resulted in a `400 Bad Request`
+        // response: {"__type":"SerializationException","Message":"class com.amazon.coral.value.json.numbers.TruncatingBigNumber can not be c (truncated...)
+        // SerializationException (client): class com.amazon.coral.value.json.numbers.TruncatingBigNumber can not be converted to an String
+        // - {"__type":"SerializationException","Message":"class com.amazon.coral.value.json.numbers.TruncatingBigNumber can not be converted to an String"}
+
+        $this->logger->info('3.9');
+        $this->logger->info($result);
     }
+
 }
