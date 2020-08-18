@@ -4,17 +4,17 @@
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
 
     <event name="customer_register_success">
-        <observer name="transom_aws_fraud_detector_create_account"
+        <observer name="transom_aws_fraud_detector_create_account_event"
                   instance="Transom\AWSFraudDetector\Observer\Events\CreateAccountEvent"/>
     </event>
 
     <event name="customer_login">
-        <observer name="transom_aws_fraud_detector_account_login"
+        <observer name="transom_aws_fraud_detector_account_login_event"
                   instance="Transom\AWSFraudDetector\Observer\Events\AccountLoginEvent"/>
     </event>
 
     <event name="customer_logout">
-        <observer name="transom_aws_fraud_detector_account_logout"
+        <observer name="transom_aws_fraud_detector_account_logout_event"
                   instance="Transom\AWSFraudDetector\Observer\Events\AccountLogoutEvent"/>
     </event>
 

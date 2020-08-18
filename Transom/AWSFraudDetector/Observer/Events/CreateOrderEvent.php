@@ -52,8 +52,17 @@ class CreateOrderEvent implements ObserverInterface
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
-        $this->logger->info('>>>> In Transom AWSFraudDetector CreateOrderEvent <<<<<');
+        $this->logger->info('##### In Transom AWSFraudDetector ##### CreateOrderEvent');
         $this->logger->info('0.2');
+
+        $this->logger->info(' [coe] date type = ' . getType($observer->getData()));
+        $this->logger->info(' [coe] event name = ' . $observer->getEvent()->getName());
+        foreach ($observer->getData() as $key => $value) {
+            $this->logger->info(' [coe] data[' . $key . '] type = ' . getType($value));
+            if (getType($value) === 'object') {
+                $this->logger->info(' [coe] object type = ' . get_class($value));
+            }
+        }
         /*
          * admin
          * AKIAVBHZLHZR72NGUNPH
@@ -70,12 +79,12 @@ class CreateOrderEvent implements ObserverInterface
         $this->logger->info('1');
         //$this->logger->info($client);
 
-        //'detectorId' => 'crs_demo_order', // REQUIRED
-        $detectors_result = $client->GetDetectors([
-            'maxResults' => 10
-        ]);
-        $this->logger->info('2');
-        $this->logger->info($detectors_result);
+//        //'detectorId' => 'crs_demo_order', // REQUIRED
+//        $detectors_result = $client->GetDetectors([
+//            'maxResults' => 10
+//        ]);
+//        $this->logger->info('2');
+//        $this->logger->info($detectors_result);
 
         // get order
         $order = $observer->getEvent()->getOrder();
@@ -153,56 +162,96 @@ class CreateOrderEvent implements ObserverInterface
         $this->logger->info('3.8 -- ipAddress = ' . $ipAddress);
         $this->logger->info('3.8 -- userAgent = ' . $userAgent);
 
-        $result = $client->GetEventPrediction([
-            'detectorId' => 'fraud_order',
-            'eventId' => $eventId,
-            'eventTypeName' => "create_order",
-            'eventTimestamp'    => $eventTime,
-            'entities' => [[
-                'entityType'    => 'customer',
-                'entityId'      => $customerId
-            ]],
-            'eventVariables' => [
-                'order_id'          => $orderId,
-                'user_id'           => $customerId,
-                'email_address'     => $customerEmail,
-                'user_name'         => $billingName,
+//        $result = $client->GetEventPrediction([
+//            'detectorId' => 'fraud_order',
+//            'eventId' => 'fo-' . $eventId,
+//            'eventTypeName' => "create_order",
+//            'eventTimestamp'    => $eventTime,
+//            'entities' => [[
+//                'entityType'    => 'customer',
+//                'entityId'      => $customerId
+//            ]],
+//            'eventVariables' => [
+//                'order_id'          => $orderId,
+//                'user_id'           => $customerId,
+//                'email_address'     => $customerEmail,
+//                'user_name'         => $billingName,
+//
+//                'billing_name'         => $billingName,
+//                'billing_address_1'    => $billingAddress1,
+//                'billing_city'         => $billingCity,
+//                'billing_state'        => $billingRegion,
+//                'billing_zip'          => $billingZipCode,
+//                'billing_country'      => $billingCountry,
+//                'billing_phone_number' => $billingTelephone,
+//
+//                'shipping_name'         => $shippingName,
+//                'shipping_address_1'    => $shippingAddress1,
+//                'shipping_city'         => $shippingCity,
+//                'shipping_state'        => $shippingRegion,
+//                'shipping_zip'          => $shippingZipCode,
+//                'shipping_country'      => $shippingCountry,
+//                'shipping_phone_number' => $shippingTelephone,
+//
+//                'payment_instrument_type'  => 'credit_card',
+////                //'credit_card_type'        => '...',
+//                'total_order_price'        => strval($orderAmount),
+//                'currency_code'            => $orderCurrency,
+//
+//                'event_timestamp' => $eventTime,
+//                'ip_address'      => $ipAddress,
+//                'user_agent'      => $userAgent
+//            ]
+//        ]);
+//        $this->logger->info('3.9.0 -- fraud_order');
+//        $this->logger->info($result);
 
-                'billing_name'         => $billingName,
-                'billing_address_1'    => $billingAddress1,
-                'billing_city'         => $billingCity,
-                'billing_state'        => $billingRegion,
-                'billing_zip'          => $billingZipCode,
-                'billing_country'      => $billingCountry,
-                'billing_phone_number' => $billingTelephone,
-
-                'shipping_name'         => $shippingName,
-                'shipping_address_1'    => $shippingAddress1,
-                'shipping_city'         => $shippingCity,
-                'shipping_state'        => $shippingRegion,
-                'shipping_zip'          => $shippingZipCode,
-                'shipping_country'      => $shippingCountry,
-                'shipping_phone_number' => $shippingTelephone,
-
-                'payment_instrument_type'  => 'credit_card',
-//                //'credit_card_type'        => '...',
-                'total_order_price'        => strval($orderAmount),
-                'currency_code'            => $orderCurrency,
-
-                'event_timestamp' => $eventTime,
-                'ip_address'      => $ipAddress,
-                'user_agent'      => $userAgent
-            ]
-        ]);
-
-        // Error executing "GetEventPrediction" on "https://frauddetector.us-east-1.amazonaws.com"; A
-        //WS HTTP error: Client error: `POST https://frauddetector.us-east-1.amazonaws.com` resulted in a `400 Bad Request`
-        // response: {"__type":"SerializationException","Message":"class com.amazon.coral.value.json.numbers.TruncatingBigNumber can not be c (truncated...)
-        // SerializationException (client): class com.amazon.coral.value.json.numbers.TruncatingBigNumber can not be converted to an String
-        // - {"__type":"SerializationException","Message":"class com.amazon.coral.value.json.numbers.TruncatingBigNumber can not be converted to an String"}
-
-        $this->logger->info('3.9');
-        $this->logger->info($result);
+//        $this->logger->info('3.9.1.0.1 -- crs_demo_order');
+//
+//        $result = $client->GetEventPrediction([
+//            'detectorId' => 'create_order_detector',
+//            'eventId' => 'crs-' . $eventId,
+//            'eventTypeName' => "create_order",
+//            'eventTimestamp'    => $eventTime,
+//            'entities' => [[
+//                'entityType'    => 'customer',
+//                'entityId'      => strval($customerId)
+//            ]],
+//            'eventVariables' => [
+//                'order_id'          => strval($orderId),
+//                'user_id'           => strval($customerId),
+//                'email_address'     => $customerEmail,
+//                'user_name'         => $billingName,
+//
+//                'billing_name'         => strval($billingName),
+//                'billing_address_1'    => strval($billingAddress1),
+//                'billing_city'         => strval($billingCity),
+//                'billing_state'        => strval($billingRegion),
+//                'billing_zip'          => strval($billingZipCode),
+//                'billing_country'      => strval($billingCountry),
+//                'billing_phone_number' => strval($billingTelephone),
+//
+//                'shipping_name'         => strval($shippingName),
+//                'shipping_address_1'    => strval($shippingAddress1),
+//                'shipping_city'         => strval($shippingCity),
+//                'shipping_state'        => strval($shippingRegion),
+//                'shipping_zip'          => strval($shippingZipCode),
+//                'shipping_country'      => strval($shippingCountry),
+//                'shipping_phone_number' => strval($shippingTelephone),
+//
+//                'payment_instrument_type'  => 'credit_card',
+//                'credit_card_type'        => 'visa',     // TODO - get cc type
+//                'total_order_price'        => strval($orderAmount),
+//                'currency_code'            => $orderCurrency,
+//
+//                'event_timestamp' => $eventTime,
+//                'ip_address'      => $ipAddress,
+//                'user_agent'      => $userAgent
+//            ]
+//        ]);
+//
+//        $this->logger->info('3.9.1 -- crs_demo_order');
+//        $this->logger->info($result);
     }
 
 }

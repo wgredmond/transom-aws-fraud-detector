@@ -32,6 +32,6 @@ class CreateAccountBackendEvent implements ObserverInterface
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
-        $this->logger->info('>>>> In Transom AWSFraudDetector CreateAccountBackendEvent <<<<<');
+        $this->logger->info('##### In Transom AWSFraudDetector ##### CreateAccountBackendEvent');
     }
 }

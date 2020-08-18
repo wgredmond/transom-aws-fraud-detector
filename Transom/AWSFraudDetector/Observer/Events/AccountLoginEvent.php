@@ -32,6 +32,6 @@ class AccountLoginEvent implements ObserverInterface
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
-        $this->logger->info('>>>> In Transom AWSFraudDetector AccountLoginEvent <<<<<');
+        $this->logger->info('##### In Transom AWSFraudDetector ##### AccountLoginEvent');
     }
 }

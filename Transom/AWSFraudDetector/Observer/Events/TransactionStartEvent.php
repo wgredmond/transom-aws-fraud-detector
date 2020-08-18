@@ -32,6 +32,16 @@ class TransactionStartEvent implements ObserverInterface
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
-        $this->logger->info('>>>> In Transom AWSFraudDetector TransactionStartEvent <<<<<');
+        $this->logger->info('##### In Transom AWSFraudDetector ##### TransactionStartEvent');
+        $this->logger->info(' [tse] date type = ' . getType($observer->getData()));
+        $this->logger->info(' [tse] event name = ' . $observer->getEvent()->getName());
+        foreach ($observer->getData() as $key => $value) {
+            $this->logger->info(' [tse] data[' . $key . '] type = ' . getType($value));
+            if (getType($value) === 'object') {
+                $this->logger->info(' [tse] object type = ' . get_class($value));
+            }
+        }
+
+
     }
 }

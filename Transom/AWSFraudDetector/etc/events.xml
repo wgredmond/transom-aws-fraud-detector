@@ -3,18 +3,29 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
 
 <event name="sales_order_place_before">
-        <observer name="transom_aws_fraud_detector_create_order"
+        <observer name="transom_aws_fraud_detector_create_order_event"
                   instance="Transom\AWSFraudDetector\Observer\Events\CreateOrderEvent"/>
     </event>
 
     <event name="sales_order_payment_place_start">
-        <observer name="transom_aws_fraud_detector_payment_place_start"
+        <observer name="transom_aws_fraud_detector_payment_place_start_event"
                   instance="Transom\AWSFraudDetector\Observer\Events\TransactionStartEvent"/>
     </event>
 
     <event name="sales_order_payment_place_end">
-        <observer name="transom_aws_fraud_detector_payment_place_end"
-                  instance="Transom\AWSFraudDetector\Observer\Events\TransactionEvent"/>
+        <observer name="transom_aws_fraud_detector_payment_place_end_event"
+                  instance="Transom\AWSFraudDetector\Observer\Events\CreateOrderObserver"/>
     </event>
 
+    <event name="checkout_submit_all_after">
+        <observer name="transom_aws_fraud_detector_place_order_observer" instance="Transom\AWSFraudDetector\Observer\Events\PlaceOrderObserver" />
+    </event>
+
+    <event name="paypal_checkout_success">
+        <observer name="transom_aws_fraud_detector_place_order_checkout_success_observer" instance="Transom\AWSFraudDetector\Observer\Events\PlaceOrderObserver" />
+    </event>
+
+    <event name="checkout_onepage_controller_success_action">
+        <observer name="transom_aws_fraud_detector_place_order_checkout_success_observer" instance="Transom\AWSFraudDetector\Observer\Events\PlaceOrderObserver" />
+    </event>
 </config>
