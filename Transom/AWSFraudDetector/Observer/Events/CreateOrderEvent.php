@@ -15,6 +15,7 @@ use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 use Psr\Log\LoggerInterface;
 use Aws\FraudDetector\FraudDetectorClient;
+use Transom\AWSFraudDetector\Model\ConfigSettings;
 
 
 class CreateOrderEvent implements ObserverInterface
@@ -26,10 +27,14 @@ class CreateOrderEvent implements ObserverInterface
     protected $logger;
 
     /**
+     * @var ConfigSettings
+     */
+    protected $config;
+
+    /**
      * @var DateTime
      */
     protected $eventDate;
-
 
     /**
      * @var \Magento\Framework\HTTP\PhpEnvironment\RemoteAddress
@@ -37,10 +42,12 @@ class CreateOrderEvent implements ObserverInterface
     private $remoteAddress;
 
     public function __construct(LoggerInterface $logger,
+                                ConfigSettings $config,
                                 DateTime $eventDate,
                                 RemoteAddress $remoteAddress)
     {
         $this->logger = $logger;
+        $this->config = $config;
         $this->eventDate =  $eventDate;
         $this->remoteAddress = $remoteAddress;
     }
@@ -52,8 +59,12 @@ class CreateOrderEvent implements ObserverInterface
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
-        $this->logger->info('##### In Transom AWSFraudDetector ##### CreateOrderEvent');
+        $this->logger->info('##### In Transom AWSFraudDetector ##### CreateOrderEvent; isApiActive()? ' . $this->config->isApiActive());
         $this->logger->info('0.2');
+
+        if (!$this->config->isApiActive()) {
+            return $this;
+        }
 
         $this->logger->info(' [coe] date type = ' . getType($observer->getData()));
         $this->logger->info(' [coe] event name = ' . $observer->getEvent()->getName());
@@ -63,28 +74,31 @@ class CreateOrderEvent implements ObserverInterface
                 $this->logger->info(' [coe] object type = ' . get_class($value));
             }
         }
-        /*
-         * admin
-         * AKIAVBHZLHZR72NGUNPH
-         * CIv+STPEq36gmRUi8ACLKeXtibbFnFfyGzYgD79P
-         */
-        $client = new FraudDetectorClient([
-            'version' => 'latest',
-            'region'  => 'us-east-1',
-            'credentials' => [
-                'key'    => 'AKIAVBHZLHZR72NGUNPH',
-                'secret' => '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'
-            ]
-        ]);
-        $this->logger->info('1');
+
+
+        if ($this->config->isApiAccessKeysInAdmin()) {
+            $client = new FraudDetectorClient([
+                'version' => 'latest',
+                'region' => $this->config->getApiAwsRegion(),
+                'credentials' => [
+                    'key' => $this->config->getApiIamKey(),
+                    'secret' => $this->config->getApiIamSecret()
+                ]
+            ]);
+        } else {
+            // TODO get creds from env
+            $this->logger->info(' [coe] TODO hook up doont manage credentals in admin option.');
+            return $this;
+        }
+            $this->logger->info('1');
         //$this->logger->info($client);
 
 //        //'detectorId' => 'crs_demo_order', // REQUIRED
-//        $detectors_result = $client->GetDetectors([
-//            'maxResults' => 10
-//        ]);
-//        $this->logger->info('2');
-//        $this->logger->info($detectors_result);
+        $detectors_result = $client->GetDetectors([
+            'maxResults' => 10
+        ]);
+        $this->logger->info('2');
+        $this->logger->info($detectors_result);
 
         // get order
         $order = $observer->getEvent()->getOrder();
