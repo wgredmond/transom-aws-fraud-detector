@@ -36,12 +36,18 @@ class CreateOrderObserver implements ObserverInterface
      */
     protected $eventDate;
 
-
     /**
      * @var \Magento\Framework\HTTP\PhpEnvironment\RemoteAddress
      */
     private $remoteAddress;
 
+    /**
+     * CreateOrderObserver constructor.
+     * @param LoggerInterface $logger
+     * @param ConfigSettings $config
+     * @param DateTime $eventDate
+     * @param RemoteAddress $remoteAddress
+     */
     public function __construct(LoggerInterface $logger,
                                 ConfigSettings $config,
                                 DateTime $eventDate,
@@ -94,6 +100,9 @@ class CreateOrderObserver implements ObserverInterface
                 $this->logger->info(' [coo] data[' . $key . '] type = ' . getType($value));
                 if (getType($value) === 'object') {
                     $this->logger->info(' [coo] object type = ' . get_class($value));
+                } else if(getType($value) === 'array') {
+                } else {
+                    $this->logger->info(' [coo] data[' . $key . '] = ' . $value);
                 }
             }
         }
@@ -107,6 +116,9 @@ class CreateOrderObserver implements ObserverInterface
                 $this->logger->info(' [coo] payment data[' . $key . '] type = ' . getType($value));
                 if (getType($value) === 'object') {
                     $this->logger->info(' [coo] payment object type = ' . get_class($value));
+                } else if(getType($value) === 'array') {
+                } else {
+                    $this->logger->info(' [coo] payment data[' . $key . '] = ' . $value);
                 }
             }
 
@@ -125,12 +137,15 @@ class CreateOrderObserver implements ObserverInterface
                 $this->logger->info(' [coo] payment additional info[' . $key . '] type = ' . getType($value));
                 if (getType($value) === 'object') {
                     $this->logger->info(' [coo] payment additional info object type = ' . get_class($value));
+                } else if(getType($value) === 'array') {
+                } else {
+                    $this->logger->info(' [coo] payment additional info[' . $key . '] = ' . $value);
                 }
             }
         }
 
         // get order
-        $order = $observer->getEvent()->getOrder();
+        $order = $payment->getOrder();
 
         if ($localLogging) {
             $this->logger->info('3.1');
@@ -140,6 +155,18 @@ class CreateOrderObserver implements ObserverInterface
         if (empty($order)) {
             $this->logger->info('There is an error in CreateOrderObserver');
             return $this;
+        }
+
+        if ($localLogging) {
+            foreach ($order->getData() as $key => $value) {
+                $this->logger->info(' [coo] order data[' . $key . '] type = ' . getType($value));
+                if (getType($value) === 'object') {
+                    $this->logger->info(' [coo] order object type = ' . get_class($value));
+                } else if (getType($value) === 'array') {
+                } else {
+                    $this->logger->info(' [coo] order data[' . $key . '] = ' . $value);
+                }
+            }
         }
 
         if ($localLogging) {
@@ -232,7 +259,7 @@ class CreateOrderObserver implements ObserverInterface
         }
 
         $result = $client->GetEventPrediction([
-            'detectorId' => 'create_order_detector',
+            'detectorId' => 'detector_july_aug_2020',
             'eventId' => 'crs-' . $eventId,
             'eventTypeName' => "create_order",
             'eventTimestamp'    => $eventTime,
@@ -252,7 +279,6 @@ class CreateOrderObserver implements ObserverInterface
                 'billing_state'        => strval($billingRegion),
                 'billing_zip'          => strval($billingZipCode),
                 'billing_country'      => strval($billingCountry),
-                'billing_phone_number' => strval($billingTelephone),
 
                 'shipping_name'         => strval($shippingName),
                 'shipping_address_1'    => strval($shippingAddress1),
@@ -260,10 +286,8 @@ class CreateOrderObserver implements ObserverInterface
                 'shipping_state'        => strval($shippingRegion),
                 'shipping_zip'          => strval($shippingZipCode),
                 'shipping_country'      => strval($shippingCountry),
-                'shipping_phone_number' => strval($shippingTelephone),
 
                 'payment_instrument_type'  => 'credit_card',
-                'credit_card_type'        => 'visa',     // TODO - get cc type
                 'total_order_price'        => strval($orderAmount),
                 'currency_code'            => $orderCurrency,
 
@@ -279,26 +303,4 @@ class CreateOrderObserver implements ObserverInterface
         }
     }
 
-//    private function _processPayment(\Magento\Sales\Model\Order\Payment\Interceptor $payment) {
-//        $this->logger->info(' [coo] processPayment; amount authorized = ' . $payment->getAmountAuthorized());
-//
-//        $payment->getMethod();
-//        $payment->getAmountAuthorized();
-//        $payment->getCcType();
-//        $payment->getEntityId();
-//       s $payment->getCcCidStatus();
-//        $payment->getCcStatus();
-//        $payment->getCcTransId();
-//        $payment->getCcLast4();
-//        $payment->getParentId();
-//        $payment->getTransactionId();
-//
-//        foreach ($payment->getData() as $key => $value) {
-//            $this->logger->info(' [coo] payment data[' . $key . '] type = ' . getType($value));
-//            if (getType($value) === 'object') {
-//                $this->logger->info(' [coo] payment object type = ' . get_class($value));
-//            }
-//        }
-//
-//    }
 }
