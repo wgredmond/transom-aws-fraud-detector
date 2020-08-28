@@ -100,7 +100,7 @@ class CreateOrderObserver implements ObserverInterface
                 $this->logger->info(' [coo] data[' . $key . '] type = ' . getType($value));
                 if (getType($value) === 'object') {
                     $this->logger->info(' [coo] object type = ' . get_class($value));
-                } else if(getType($value) === 'array') {
+                } else if (getType($value) === 'array') {
                 } else {
                     $this->logger->info(' [coo] data[' . $key . '] = ' . $value);
                 }
@@ -116,7 +116,7 @@ class CreateOrderObserver implements ObserverInterface
                 $this->logger->info(' [coo] payment data[' . $key . '] type = ' . getType($value));
                 if (getType($value) === 'object') {
                     $this->logger->info(' [coo] payment object type = ' . get_class($value));
-                } else if(getType($value) === 'array') {
+                } else if (getType($value) === 'array') {
                 } else {
                     $this->logger->info(' [coo] payment data[' . $key . '] = ' . $value);
                 }
@@ -137,7 +137,7 @@ class CreateOrderObserver implements ObserverInterface
                 $this->logger->info(' [coo] payment additional info[' . $key . '] type = ' . getType($value));
                 if (getType($value) === 'object') {
                     $this->logger->info(' [coo] payment additional info object type = ' . get_class($value));
-                } else if(getType($value) === 'array') {
+                } else if (getType($value) === 'array') {
                 } else {
                     $this->logger->info(' [coo] payment additional info[' . $key . '] = ' . $value);
                 }
@@ -174,9 +174,9 @@ class CreateOrderObserver implements ObserverInterface
         }
 
         // Order main info
-        $orderId           = $order->getIncrementId();
-        $orderAmount       = $order->getGrandTotal();
-        $orderCurrency     = $order->getOrderCurrencyCode();
+        $orderId = $order->getIncrementId();
+        $orderAmount = $order->getGrandTotal();
+        $orderCurrency = $order->getOrderCurrencyCode();
         $this->logger->info('3.3 -- orderId = ' . $orderId);
         if ($localLogging) {
             $this->logger->info('3.3 -- orderAmount = ' . $orderAmount);
@@ -185,10 +185,10 @@ class CreateOrderObserver implements ObserverInterface
         }
 
         // Customer main info
-        $customerId        = $order->getCustomerId();
-        $customerEmail     = $order->getCustomerEmail();
+        $customerId = $order->getCustomerId();
+        $customerEmail = $order->getCustomerEmail();
         //$session            = $this->customerSession->getMyValue();
-        $userAgent     = $_SERVER ['HTTP_USER_AGENT'];
+        $userAgent = $_SERVER ['HTTP_USER_AGENT'];
 
         if ($localLogging) {
             $this->logger->info('3.4 -- customerId = ' . $customerId);
@@ -196,21 +196,21 @@ class CreateOrderObserver implements ObserverInterface
         }
 
         // Billing Address details
-        $billingAddress     = $order->getBillingAddress();
-        $billingFirstName   = $billingAddress->getFirstname();
-        $billingLastName    = $billingAddress->getLastName();
-        $billingName        = $billingFirstName." ".$billingLastName;
-        $billingTelephone   = $billingAddress->getTelephone();
-        $billingStreet      = $billingAddress->getStreet();
-        $billingAddress1    = $billingStreet[0];
-        $billingAddress2    = "";
-        if(isset($billingStreet[1])){
+        $billingAddress = $order->getBillingAddress();
+        $billingFirstName = $billingAddress->getFirstname();
+        $billingLastName = $billingAddress->getLastName();
+        $billingName = $billingFirstName . " " . $billingLastName;
+        $billingTelephone = $billingAddress->getTelephone();
+        $billingStreet = $billingAddress->getStreet();
+        $billingAddress1 = $billingStreet[0];
+        $billingAddress2 = "";
+        if (isset($billingStreet[1])) {
             $billingAddress2 = $billingStreet[1];
         }
-        $billingCity        = $billingAddress->getCity();
-        $billingRegion      = $billingAddress->getRegion();
-        $billingCountry     = $billingAddress->getCountryId();
-        $billingZipCode     = $billingAddress->getPostcode();
+        $billingCity = $billingAddress->getCity();
+        $billingRegion = $billingAddress->getRegion();
+        $billingCountry = $billingAddress->getCountryId();
+        $billingZipCode = $billingAddress->getPostcode();
 
         if ($localLogging) {
             $this->logger->info('3.5 -- billingName = ' . $billingName);
@@ -218,29 +218,29 @@ class CreateOrderObserver implements ObserverInterface
         }
 
         // Shipping Address details
-        $shippingAddress    = $order->getShippingAddress();
-        $shippingFirstName  = $shippingAddress->getFirstname();
-        $shippingLastName   = $shippingAddress->getLastName();
-        $shippingName       = $shippingFirstName." ".$shippingLastName;
-        $shippingTelephone  = $shippingAddress->getTelephone();
-        $shippingStreet     = $shippingAddress->getStreet();
-        $shippingAddress1   = $shippingStreet[0];
-        $shippingAddress2   = "";
-        if(isset($shippingStreet[1])){
+        $shippingAddress = $order->getShippingAddress();
+        $shippingFirstName = $shippingAddress->getFirstname();
+        $shippingLastName = $shippingAddress->getLastName();
+        $shippingName = $shippingFirstName . " " . $shippingLastName;
+        $shippingTelephone = $shippingAddress->getTelephone();
+        $shippingStreet = $shippingAddress->getStreet();
+        $shippingAddress1 = $shippingStreet[0];
+        $shippingAddress2 = "";
+        if (isset($shippingStreet[1])) {
             $shippingAddress2 = $shippingStreet[1];
         }
-        $shippingCity       = $shippingAddress->getCity();
-        $shippingRegion     = $shippingAddress->getRegion();
-        $shippingCountry    = $shippingAddress->getCountryId();
-        $shippingZipCode    = $shippingAddress->getPostcode();
+        $shippingCity = $shippingAddress->getCity();
+        $shippingRegion = $shippingAddress->getRegion();
+        $shippingCountry = $shippingAddress->getCountryId();
+        $shippingZipCode = $shippingAddress->getPostcode();
 
         if ($localLogging) {
             $this->logger->info('3.6 -- shippingName = ' . $shippingName);
             $this->logger->info('3.6 -- shippingZipCode = ' . $shippingZipCode);
         }
 
-        $eventTime = $this->eventDate->format('Y-m-d\TH:i:s.').gettimeofday()['usec'] . 'Z';
-        $eventId = $orderId . '-' . $this->eventDate->format('Y-m-d_H-i-s-').gettimeofday()['usec'];
+        $eventTime = $this->eventDate->format('Y-m-d\TH:i:s.') . gettimeofday()['usec'] . 'Z';
+        $eventId = $orderId . '-' . $this->eventDate->format('Y-m-d_H-i-s-') . gettimeofday()['usec'];
 
         if ($localLogging) {
             $this->logger->info('3.7 -- eventTime = ' . $eventTime);
@@ -262,38 +262,38 @@ class CreateOrderObserver implements ObserverInterface
             'detectorId' => 'detector_july_aug_2020',
             'eventId' => 'crs-' . $eventId,
             'eventTypeName' => "create_order",
-            'eventTimestamp'    => $eventTime,
+            'eventTimestamp' => $eventTime,
             'entities' => [[
-                'entityType'    => 'customer',
-                'entityId'      => strval($customerId)
+                'entityType' => 'customer',
+                'entityId' => strval($customerId)
             ]],
             'eventVariables' => [
-                'order_id'          => strval($orderId),
-                'user_id'           => strval($customerId),
-                'email_address'     => $customerEmail,
-                'user_name'         => $billingName,
+                'order_id' => strval($orderId),
+                'user_id' => strval($customerId),
+                'email_address' => $customerEmail,
+                'user_name' => $billingName,
 
-                'billing_name'         => strval($billingName),
-                'billing_address_1'    => strval($billingAddress1),
-                'billing_city'         => strval($billingCity),
-                'billing_state'        => strval($billingRegion),
-                'billing_zip'          => strval($billingZipCode),
-                'billing_country'      => strval($billingCountry),
+                'billing_name' => strval($billingName),
+                'billing_address_1' => strval($billingAddress1),
+                'billing_city' => strval($billingCity),
+                'billing_state' => strval($billingRegion),
+                'billing_zip' => strval($billingZipCode),
+                'billing_country' => strval($billingCountry),
 
-                'shipping_name'         => strval($shippingName),
-                'shipping_address_1'    => strval($shippingAddress1),
-                'shipping_city'         => strval($shippingCity),
-                'shipping_state'        => strval($shippingRegion),
-                'shipping_zip'          => strval($shippingZipCode),
-                'shipping_country'      => strval($shippingCountry),
+                'shipping_name' => strval($shippingName),
+                'shipping_address_1' => strval($shippingAddress1),
+                'shipping_city' => strval($shippingCity),
+                'shipping_state' => strval($shippingRegion),
+                'shipping_zip' => strval($shippingZipCode),
+                'shipping_country' => strval($shippingCountry),
 
-                'payment_instrument_type'  => 'credit_card',
-                'total_order_price'        => strval($orderAmount),
-                'currency_code'            => $orderCurrency,
+                'payment_instrument_type' => 'credit_card',
+                'total_order_price' => strval($orderAmount),
+                'currency_code' => $orderCurrency,
 
                 'event_timestamp' => $eventTime,
-                'ip_address'      => $ipAddress,
-                'user_agent'      => $userAgent
+                'ip_address' => $ipAddress,
+                'user_agent' => $userAgent
             ]
         ]);
 
@@ -301,6 +301,11 @@ class CreateOrderObserver implements ObserverInterface
             $this->logger->info('3.9.1 -- crs_demo_order');
             $this->logger->info($result);
         }
-    }
 
+        if (false) {
+            $order->setState(Order::STATE_PAYMENT_REVIEW);
+            $order->setStatus(Order::STATUS_FRAUD);
+            //$this->orderRepository->save($order);
+        }
+    }
 }
