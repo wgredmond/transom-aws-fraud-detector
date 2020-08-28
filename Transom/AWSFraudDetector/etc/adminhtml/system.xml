@@ -38,6 +38,7 @@
                         <config_path>fraud_protection/transom_aws_fraud_detector/api_iam_key</config_path>
                         <comment><![CDATA[AWS API access key]]></comment>
                         <depends>
+                            <field id="api_enabled">1</field>
                             <field id="api_access_keys_enabled">1</field>
                         </depends>
                     </field>
@@ -47,21 +48,15 @@
                         <config_path>fraud_protection/transom_aws_fraud_detector/api_iam_secret</config_path>
                         <comment><![CDATA[AWS API secret]]></comment>
                         <depends>
+                            <field id="api_enabled">1</field>
                             <field id="api_access_keys_enabled">1</field>
                         </depends>
                     </field>
                 </group>
 
+                <!--
                 <group id="resources_config" translate="label comment" sortOrder="14" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Resources</label>
-
-                    <!--
-                    <field id="ranges" translate="label" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Variables</label>
-                        <frontend_model>Vendor\Module\Block\Adminhtml\Form\Field\Ranges</frontend_model>
-                        <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
-                    </field>
-                    -->
 
                     <field id="variables" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Variables</label>
@@ -71,6 +66,7 @@
                     </field>
 
                 </group>
+                -->
 
 
                 <group id="model_upload_config" translate="label comment" sortOrder="16" showInDefault="1" showInWebsite="1" showInStore="0">

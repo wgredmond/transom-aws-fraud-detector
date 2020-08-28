@@ -258,54 +258,59 @@ class CreateOrderObserver implements ObserverInterface
             $this->logger->info('3.9.1.0.1 -- crs_demo_order');
         }
 
-        $result = $client->GetEventPrediction([
-            'detectorId' => 'detector_july_aug_2020',
-            'eventId' => 'crs-' . $eventId,
-            'eventTypeName' => "create_order",
-            'eventTimestamp' => $eventTime,
-            'entities' => [[
-                'entityType' => 'customer',
-                'entityId' => strval($customerId)
-            ]],
-            'eventVariables' => [
-                'order_id' => strval($orderId),
-                'user_id' => strval($customerId),
-                'email_address' => $customerEmail,
-                'user_name' => $billingName,
+        try {
+            $result = $client->GetEventPrediction([
+                'detectorId' => 'detector_july_aug_2020',
+                'eventId' => 'crs-' . $eventId,
+                'eventTypeName' => "create_order",
+                'eventTimestamp' => $eventTime,
+                'entities' => [[
+                    'entityType' => 'customer',
+                    'entityId' => strval($customerId)
+                ]],
+                'eventVariables' => [
+                    'order_id' => strval($orderId),
+                    'user_id' => strval($customerId),
+                    'email_address' => $customerEmail,
+                    'user_name' => $billingName,
 
-                'billing_name' => strval($billingName),
-                'billing_address_1' => strval($billingAddress1),
-                'billing_city' => strval($billingCity),
-                'billing_state' => strval($billingRegion),
-                'billing_zip' => strval($billingZipCode),
-                'billing_country' => strval($billingCountry),
+                    'billing_name' => strval($billingName),
+                    'billing_address_1' => strval($billingAddress1),
+                    'billing_city' => strval($billingCity),
+                    'billing_state' => strval($billingRegion),
+                    'billing_zip' => strval($billingZipCode),
+                    'billing_country' => strval($billingCountry),
 
-                'shipping_name' => strval($shippingName),
-                'shipping_address_1' => strval($shippingAddress1),
-                'shipping_city' => strval($shippingCity),
-                'shipping_state' => strval($shippingRegion),
-                'shipping_zip' => strval($shippingZipCode),
-                'shipping_country' => strval($shippingCountry),
+                    'shipping_name' => strval($shippingName),
+                    'shipping_address_1' => strval($shippingAddress1),
+                    'shipping_city' => strval($shippingCity),
+                    'shipping_state' => strval($shippingRegion),
+                    'shipping_zip' => strval($shippingZipCode),
+                    'shipping_country' => strval($shippingCountry),
 
-                'payment_instrument_type' => 'credit_card',
-                'total_order_price' => strval($orderAmount),
-                'currency_code' => $orderCurrency,
+                    'payment_instrument_type' => 'credit_card',
+                    'total_order_price' => strval($orderAmount),
+                    'currency_code' => $orderCurrency,
 
-                'event_timestamp' => $eventTime,
-                'ip_address' => $ipAddress,
-                'user_agent' => $userAgent
-            ]
-        ]);
+                    'event_timestamp' => $eventTime,
+                    'ip_address' => $ipAddress,
+                    'user_agent' => $userAgent
+                ]
+            ]);
 
-        if ($localLogging) {
-            $this->logger->info('3.9.1 -- crs_demo_order');
-            $this->logger->info($result);
-        }
+            if ($localLogging) {
+                $this->logger->info('3.9.1 -- detector_july_aug_2020');
+                $this->logger->info($result);
+            }
 
-        if (false) {
-            $order->setState(Order::STATE_PAYMENT_REVIEW);
-            $order->setStatus(Order::STATUS_FRAUD);
-            //$this->orderRepository->save($order);
+            if (false) {
+                $order->setState(Order::STATE_PAYMENT_REVIEW);
+                $order->setStatus(Order::STATUS_FRAUD);
+                //$this->orderRepository->save($order);
+            }
+        } catch (\Throwable $exception) {
+            $this->logger->info('4.0 -- AWS Exception:' . $exception->getMessage());
+            // TODO: add exception handling
         }
     }
 }
