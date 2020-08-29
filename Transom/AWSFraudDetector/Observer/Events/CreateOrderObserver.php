@@ -24,12 +24,12 @@ class CreateOrderObserver implements ObserverInterface
 {
 
     /**
-     * @var LoggerInterface
+     * @var \Psr\Log\LoggerInterface
      */
     protected $logger;
 
     /**
-     * @var ConfigSettings
+     * @var \Transom\AWSFraudDetector\Model\ConfigSettings
      */
     protected $config;
 
@@ -51,6 +51,7 @@ class CreateOrderObserver implements ObserverInterface
 
     /**
      * CreateOrderObserver constructor.
+     *
      * @param LoggerInterface $logger
      * @param ConfigSettings $config
      * @param DateTime $eventDate
@@ -76,17 +77,12 @@ class CreateOrderObserver implements ObserverInterface
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
-        $localLogging = true;
-
-        if ($localLogging) {
-            $this->logger->info('##### In Transom AWSFraudDetector ##### CreateOrderObserver');
-            $this->logger->info('0.2');
-        }
-
+        // only process order if this service is enable
         if (!$this->config->isApiActive()) {
             return $this;
         }
 
+        // get cretentials, create AWS API client instance
         if ($this->config->isApiAccessKeysInAdmin()) {
             $client = new FraudDetectorClient([
                 'version' => 'latest',
@@ -98,114 +94,32 @@ class CreateOrderObserver implements ObserverInterface
             ]);
         } else {
             // TODO get creds from env
-            $this->logger->info(' [coo] TODO hook up dont manage credentals in admin option.');
+            $this->logger->info('TODO hook up dont manage credentals in admin option.');
             return $this;
-        }
-
-        if ($localLogging) {
-            $this->logger->info('1');
-            $this->logger->info(' [coo] date type = ' . getType($observer->getData()));
-            $this->logger->info(' [coo] event name = ' . $observer->getEvent()->getName());
-            foreach ($observer->getData() as $key => $value) {
-                $this->logger->info(' [coo] data[' . $key . '] type = ' . getType($value));
-                if (getType($value) === 'object') {
-                    $this->logger->info(' [coo] object type = ' . get_class($value));
-                } else if (getType($value) === 'array') {
-                } else {
-                    $this->logger->info(' [coo] data[' . $key . '] = ' . $value);
-                }
-            }
         }
 
         // get payment
         $payment = $observer->getData('payment');
-        if ($localLogging) {
-            $this->logger->info(' [coo] payment class = ' . get_class($payment));
-
-            foreach ($payment->getData() as $key => $value) {
-                $this->logger->info(' [coo] payment data[' . $key . '] type = ' . getType($value));
-                if (getType($value) === 'object') {
-                    $this->logger->info(' [coo] payment object type = ' . get_class($value));
-                } else if (getType($value) === 'array') {
-                } else {
-                    $this->logger->info(' [coo] payment data[' . $key . '] = ' . $value);
-                }
-            }
-
-            $this->logger->info(' [coo] processPayment; entity id = ' . $payment->getEntityId());
-            $this->logger->info(' [coo] processPayment; amount authorized = ' . $payment->getAmountAuthorized());
-            $this->logger->info(' [coo] processPayment; method = ' . $payment->getMehtod());
-            $this->logger->info(' [coo] processPayment; cc type = ' . $payment->getCcType());
-            $this->logger->info(' [coo] processPayment; cc cid statusa = ' . $payment->getCcCidStatus());
-            $this->logger->info(' [coo] processPayment; cc status = ' . $payment->getCcStatus());
-            $this->logger->info(' [coo] processPayment; cc trans id = ' . $payment->getCcTransId());
-            $this->logger->info(' [coo] processPayment; cc last 4 = ' . $payment->getCcLast4());
-            $this->logger->info(' [coo] processPayment; parwnt id = ' . $payment->getParentId());
-            $this->logger->info(' [coo] processPayment; transaction id = ' . $payment->getTransactionId());
-
-            foreach ($payment->getAdditionalInformation() as $key => $value) {
-                $this->logger->info(' [coo] payment additional info[' . $key . '] type = ' . getType($value));
-                if (getType($value) === 'object') {
-                    $this->logger->info(' [coo] payment additional info object type = ' . get_class($value));
-                } else if (getType($value) === 'array') {
-                } else {
-                    $this->logger->info(' [coo] payment additional info[' . $key . '] = ' . $value);
-                }
-            }
-        }
 
         // get order
         $order = $payment->getOrder();
 
-        if ($localLogging) {
-            $this->logger->info('3.1');
-        }
-
-        //  If order data is empty then doesn't need to process
+        //  if order data is empty then doesn't need to process
         if (empty($order)) {
             $this->logger->info('There is an error in CreateOrderObserver');
             return $this;
         }
 
-        if ($localLogging) {
-            foreach ($order->getData() as $key => $value) {
-                $this->logger->info(' [coo] order data[' . $key . '] type = ' . getType($value));
-                if (getType($value) === 'object') {
-                    $this->logger->info(' [coo] order object type = ' . get_class($value));
-                } else if (getType($value) === 'array') {
-                } else {
-                    $this->logger->info(' [coo] order data[' . $key . '] = ' . $value);
-                }
-            }
-        }
-
-        if ($localLogging) {
-            $this->logger->info('3.2');
-        }
-
-        // Order main info
+        // populate order and payment variables
         $orderId = $order->getIncrementId();
         $orderAmount = $order->getGrandTotal();
         $orderCurrency = $order->getOrderCurrencyCode();
-        if ($localLogging) {
-            $this->logger->info('3.3 -- orderId = ' . $orderId);
-            $this->logger->info('3.3 -- orderAmount = ' . $orderAmount);
-            $this->logger->info('3.3 -- orderCurrency = ' . $orderCurrency);
-            $this->logger->info('3.3 -- $orderId = ' . $orderId);
-        }
 
-        // Customer main info
+        // populate customer variables
         $customerId = $order->getCustomerId();
         $customerEmail = $order->getCustomerEmail();
-        //$session            = $this->customerSession->getMyValue();
-        $userAgent = $_SERVER ['HTTP_USER_AGENT'];
 
-        if ($localLogging) {
-            $this->logger->info('3.4 -- customerId = ' . $customerId);
-            $this->logger->info('3.4 -- customerEmail = ' . $customerEmail);
-        }
-
-        // Billing Address details
+        // populate billing address variables
         $billingAddress = $order->getBillingAddress();
         $billingFirstName = $billingAddress->getFirstname();
         $billingLastName = $billingAddress->getLastName();
@@ -222,12 +136,7 @@ class CreateOrderObserver implements ObserverInterface
         $billingCountry = $billingAddress->getCountryId();
         $billingZipCode = $billingAddress->getPostcode();
 
-        if ($localLogging) {
-            $this->logger->info('3.5 -- billingName = ' . $billingName);
-            $this->logger->info('3.5 -- billingZipCode = ' . $billingZipCode);
-        }
-
-        // Shipping Address details
+        // populate shipping address variables
         $shippingAddress = $order->getShippingAddress();
         $shippingFirstName = $shippingAddress->getFirstname();
         $shippingLastName = $shippingAddress->getLastName();
@@ -244,34 +153,21 @@ class CreateOrderObserver implements ObserverInterface
         $shippingCountry = $shippingAddress->getCountryId();
         $shippingZipCode = $shippingAddress->getPostcode();
 
-        if ($localLogging) {
-            $this->logger->info('3.6 -- shippingName = ' . $shippingName);
-            $this->logger->info('3.6 -- shippingZipCode = ' . $shippingZipCode);
-        }
-
+        // populate event variables
         $eventTime = $this->eventDate->format('Y-m-d\TH:i:s.') . gettimeofday()['usec'] . 'Z';
         $eventId = $orderId . '-' . $this->eventDate->format('Y-m-d_H-i-s-') . gettimeofday()['usec'];
 
-        if ($localLogging) {
-            $this->logger->info('3.7 -- eventTime = ' . $eventTime);
-            $this->logger->info('3.7 -- eventId = ' . $eventId);
-        }
-
+        // populate session variables
         $ipAddress = $this->remoteAddress->getRemoteAddress();
+        //$session            = $this->customerSession->getMyValue();
+        $userAgent = $_SERVER ['HTTP_USER_AGENT'];
 
-        if ($localLogging) {
-            $this->logger->info('3.8 -- ipAddress = ' . $ipAddress);
-            $this->logger->info('3.8 -- userAgent = ' . $userAgent);
-        }
-
+        // call AWS api for you detector to get create order prediction
         $detectorId = $this->config->getDetectorId();
-        if ($localLogging) {
-            $this->logger->info('3.9.1 -- detectorId = ' . $detectorId);
-        }
         try {
             $result = $client->GetEventPrediction([
                 'detectorId' => $detectorId,
-                'eventId' => 'crs-' . $eventId,
+                'eventId' => 'co-' . $eventId,
                 'eventTypeName' => "create_order",
                 'eventTimestamp' => $eventTime,
                 'entities' => [[
@@ -308,36 +204,19 @@ class CreateOrderObserver implements ObserverInterface
                 ]
             ]);
 
-            if ($localLogging) {
-                $this->logger->info('3.9.2 -- result ');
-                $this->logger->info($result);
-            }
-
-
+            // get AWS score and outcome
             $scoreName = $this->config->getScoreName();
-            if ($localLogging) {
-                $this->logger->info('4.0 -- AWS Result');
-                $this->logger->info('[coo] order get status = ' . $order->getStatus());
-                $this->logger->info('[coo] order get state = ' . $order->getState());
-                $this->logger->info('[coo] scoreName = ' . $scoreName);
-            }
             $modelScores = $result->get('modelScores');
             $ruleResults = $result->get('ruleResults');
             $outcome = 'legit';
             if (!empty($modelScores[0]['scores'][$scoreName])) {
                 $insightScore = $modelScores[0]['scores'][$scoreName];
-                if ($localLogging) {
-                    $this->logger->info('[coo] insightScore = ' . $insightScore);
-                }
             }
-
             if (!empty($ruleResults[0]['outcomes'])) {
                 $outcome = $ruleResults[0]['outcomes'][0];
             }
-            if ($localLogging) {
-                $this->logger->info('[coo] outcome = ' . $outcome);
-            }
 
+            // update order status
             if ($outcome == 'legit') {
                 $order->addStatusToHistory($order->getStatus(), 'Legit order, AWS insight score [' . $scoreName . ']: '.$insightScore, false);
             } else if ($outcome == 'block_order') {
@@ -355,7 +234,7 @@ class CreateOrderObserver implements ObserverInterface
             }
 
         } catch (\Throwable $exception) {
-            $this->logger->critical('Exception in Transom CreateOrderObserver' . $exception->getMessage());
+            $this->logger->critical('Exception in Transom CreateOrderObserver -- ' . $exception->getMessage());
             // let order complete
         }
     }

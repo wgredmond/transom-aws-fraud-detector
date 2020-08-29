@@ -4,7 +4,10 @@
     <!--
     https://magento.stackexchange.com/questions/152350/magento-2-sales-order-place-after-not-returning-order-id
     -->
+
+    <!--
     <type name="Magento\Sales\Api\OrderManagementInterface">
         <plugin name="transom_aws_fraud_detector_create_management_plugin" type="Transom\AWSFraudDetector\Plugin\Sales\Api\OrderManagementInterfacePlugin"/>
     </type>
+    -->
 </config>
