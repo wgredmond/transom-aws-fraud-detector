@@ -8,6 +8,8 @@
                 <api_access_keys_enabled>1</api_access_keys_enabled>
                 <api_iam_key/>
                 <api_iam_secret/>
+                <detector_id/>
+                <score_name/>
                 <model_upload_enabled>1</model_upload_enabled>
             </transom_aws_fraud_detector>
         </fraud_protection>

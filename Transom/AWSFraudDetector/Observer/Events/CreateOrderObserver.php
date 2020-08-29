@@ -13,6 +13,8 @@ namespace Transom\AWSFraudDetector\Observer\Events;
 use DateTime;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
+use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Model\Order;
 use Psr\Log\LoggerInterface;
 use Aws\FraudDetector\FraudDetectorClient;
 use Transom\AWSFraudDetector\Model\ConfigSettings;
@@ -42,6 +44,12 @@ class CreateOrderObserver implements ObserverInterface
     private $remoteAddress;
 
     /**
+     * @var \Magento\Sales\Api\OrderRepositoryInterface
+     */
+    private $orderRepository;
+
+
+    /**
      * CreateOrderObserver constructor.
      * @param LoggerInterface $logger
      * @param ConfigSettings $config
@@ -51,11 +59,13 @@ class CreateOrderObserver implements ObserverInterface
     public function __construct(LoggerInterface $logger,
                                 ConfigSettings $config,
                                 DateTime $eventDate,
+                                OrderRepositoryInterface $orderRepository,
                                 RemoteAddress $remoteAddress)
     {
         $this->logger = $logger;
         $this->config = $config;
         $this->eventDate =  $eventDate;
+        $this->orderRepository = $orderRepository;
         $this->remoteAddress = $remoteAddress;
     }
 
@@ -177,8 +187,8 @@ class CreateOrderObserver implements ObserverInterface
         $orderId = $order->getIncrementId();
         $orderAmount = $order->getGrandTotal();
         $orderCurrency = $order->getOrderCurrencyCode();
-        $this->logger->info('3.3 -- orderId = ' . $orderId);
         if ($localLogging) {
+            $this->logger->info('3.3 -- orderId = ' . $orderId);
             $this->logger->info('3.3 -- orderAmount = ' . $orderAmount);
             $this->logger->info('3.3 -- orderCurrency = ' . $orderCurrency);
             $this->logger->info('3.3 -- $orderId = ' . $orderId);
@@ -254,13 +264,13 @@ class CreateOrderObserver implements ObserverInterface
             $this->logger->info('3.8 -- userAgent = ' . $userAgent);
         }
 
+        $detectorId = $this->config->getDetectorId();
         if ($localLogging) {
-            $this->logger->info('3.9.1.0.1 -- crs_demo_order');
+            $this->logger->info('3.9.1 -- detectorId = ' . $detectorId);
         }
-
         try {
             $result = $client->GetEventPrediction([
-                'detectorId' => 'detector_july_aug_2020',
+                'detectorId' => $detectorId,
                 'eventId' => 'crs-' . $eventId,
                 'eventTypeName' => "create_order",
                 'eventTimestamp' => $eventTime,
@@ -299,18 +309,54 @@ class CreateOrderObserver implements ObserverInterface
             ]);
 
             if ($localLogging) {
-                $this->logger->info('3.9.1 -- detector_july_aug_2020');
+                $this->logger->info('3.9.2 -- result ');
                 $this->logger->info($result);
             }
 
-            if (false) {
-                $order->setState(Order::STATE_PAYMENT_REVIEW);
-                $order->setStatus(Order::STATUS_FRAUD);
-                //$this->orderRepository->save($order);
+
+            $scoreName = $this->config->getScoreName();
+            if ($localLogging) {
+                $this->logger->info('4.0 -- AWS Result');
+                $this->logger->info('[coo] order get status = ' . $order->getStatus());
+                $this->logger->info('[coo] order get state = ' . $order->getState());
+                $this->logger->info('[coo] scoreName = ' . $scoreName);
             }
+            $modelScores = $result->get('modelScores');
+            $ruleResults = $result->get('ruleResults');
+            $outcome = 'legit';
+            if (!empty($modelScores[0]['scores'][$scoreName])) {
+                $insightScore = $modelScores[0]['scores'][$scoreName];
+                if ($localLogging) {
+                    $this->logger->info('[coo] insightScore = ' . $insightScore);
+                }
+            }
+
+            if (!empty($ruleResults[0]['outcomes'])) {
+                $outcome = $ruleResults[0]['outcomes'][0];
+            }
+            if ($localLogging) {
+                $this->logger->info('[coo] outcome = ' . $outcome);
+            }
+
+            if ($outcome == 'legit') {
+                $order->addStatusToHistory($order->getStatus(), 'Legit order, AWS insight score [' . $scoreName . ']: '.$insightScore, false);
+            } else if ($outcome == 'block_order') {
+                $order->setHoldBeforeState($order->getState());
+                $order->setHoldBeforeStatus($order->getStatus());
+                $order->setState(Order::STATE_HOLDED);
+                $order->setStatus(Order::STATUS_FRAUD);
+                $order->addStatusToHistory(Order::STATUS_FRAUD, 'Setting order status to suspected fraud and state to on hold - for order review.  AWS insight score [' . $scoreName . ']: '.$insightScore, false);
+                $this->orderRepository->save($order);
+            } else if ($outcome == 'cancel_order') {
+                $order->setState(Order::STATE_CANCELED);
+                $order->setStatus(Order::STATUS_FRAUD);
+                $order->addStatusToHistory(Order::STATUS_FRAUD, 'Setting order status to suspected fraud and state cancel.  AWS insight score [' . $scoreName . ']: '.$insightScore, false);
+                $this->orderRepository->save($order);
+            }
+
         } catch (\Throwable $exception) {
-            $this->logger->info('4.0 -- AWS Exception:' . $exception->getMessage());
-            // TODO: add exception handling
+            $this->logger->critical('Exception in Transom CreateOrderObserver' . $exception->getMessage());
+            // let order complete
         }
     }
 }

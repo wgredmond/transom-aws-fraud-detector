@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * Transom Group Inc.
+ *
+ *
+ * @category    Transom
+ * @package     Transom_Group
+ * @copyright   Copyright (c) Transom Group. All rights reserved. (https://transom-group.com/)
+ */
 
 namespace Transom\AWSFraudDetector\Model;
 
@@ -61,6 +68,40 @@ class ConfigSettings
             $storeId
         );
         return $apiKey;
+    }
+
+
+    /**
+     * Detector Id
+     *
+     * @param int|null $storeId
+     * @return string
+     */
+    public function getDetectorId($storeId = null)
+    {
+        $detectorId = $this->scopeConfig->getValue(
+            'fraud_protection/transom_aws_fraud_detector/detector_id',
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+        return $detectorId;
+    }
+
+
+    /**
+     * Score name
+     *
+     * @param int|null $storeId
+     * @return string
+     */
+    public function getScoreName($storeId = null)
+    {
+        $scoreName = $this->scopeConfig->getValue(
+            'fraud_protection/transom_aws_fraud_detector/score_name',
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+        return $scoreName;
     }
 
 

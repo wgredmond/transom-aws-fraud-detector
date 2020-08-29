@@ -23,7 +23,27 @@
                         </depends>
                     </field>
 
-                    <field id="api_access_keys_enabled" translate="label" sortOrder="30" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="decision_id" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Decision Id</label>
+                        <config_path>fraud_protection/transom_aws_fraud_detector/decision_id</config_path>
+                        <validate>required-entry</validate>
+                        <comment><![CDATA[Decision id.]]></comment>
+                        <depends>
+                            <field id="api_enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="score_name" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Score Name</label>
+                        <config_path>fraud_protection/transom_aws_fraud_detector/score_name</config_path>
+                        <validate>required-entry</validate>
+                        <comment><![CDATA[Score name.]]></comment>
+                        <depends>
+                            <field id="api_enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="api_access_keys_enabled" translate="label" sortOrder="50" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Manager Access Keys in Admin</label>
                         <config_path>fraud_protection/transom_aws_fraud_detector/api_access_keys_enabled</config_path>
                         <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
@@ -33,7 +53,7 @@
                         </depends>
                     </field>
 
-                    <field id="iam_key" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="iam_key" translate="label" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Key</label>
                         <config_path>fraud_protection/transom_aws_fraud_detector/api_iam_key</config_path>
                         <comment><![CDATA[AWS API access key]]></comment>
@@ -43,7 +63,7 @@
                         </depends>
                     </field>
 
-                    <field id="iam_secret" translate="label" type="obscure" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <field id="iam_secret" translate="label" type="obscure" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Secret</label>
                         <config_path>fraud_protection/transom_aws_fraud_detector/api_iam_secret</config_path>
                         <comment><![CDATA[AWS API secret]]></comment>

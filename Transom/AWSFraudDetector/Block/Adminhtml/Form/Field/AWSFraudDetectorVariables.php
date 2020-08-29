@@ -1,4 +1,12 @@
 <?php
+/**
+ * Transom Group Inc.
+ *
+ *
+ * @category    Transom
+ * @package     Transom_Group
+ * @copyright   Copyright (c) Transom Group. All rights reserved. (https://transom-group.com/)
+ */
 
 namespace Transom\AWSFraudDetector\Block\Adminhtml\Form\Field;
 
