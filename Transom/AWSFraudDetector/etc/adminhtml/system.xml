@@ -1,7 +1,10 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
-        <section id="fraud_protection">
+        <section id="trust_and_safety" translate="label" type="text" sortOrder="610" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Trust and Safety</label>
+            <tab>sales</tab>
+            <resource>Magento_Sales::trust_and_safety</resource>
             <group id="transom_aws" type="text" sortOrder="05" showInDefault="1" showInWebsite="1" showInStore="0">
                 <label>Transom - Amazon Fraud Protection</label>
                 <group id="api_config" translate="label comment" sortOrder="12" showInDefault="1" showInWebsite="1" showInStore="0">
@@ -73,43 +76,7 @@
                         </depends>
                     </field>
                 </group>
-
-                <!--
-                <group id="resources_config" translate="label comment" sortOrder="14" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Resources</label>
-
-                    <field id="variables" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-                        <label>Variables</label>
-                        <frontend_model>Transom\AWSFraudDetector\Block\Adminhtml\Form\Field\AmazonVariables</frontend_model>
-                        <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
-
-                    </field>
-
-                </group>
-                -->
-
-
-                <group id="model_upload_config" translate="label comment" sortOrder="16" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Model Upload Configuration</label>
-
-                    <field id="model_upload_enabled" translate="label" sortOrder="10" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
-                        <label>Enabled</label>
-                        <config_path>fraud_protection/transom_aws_fraud_detector/model_upload_enabled</config_path>
-                        <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
-                    </field>
-                </group>
-
             </group>
         </section>
     </system>
 </config>
-
-
-<!--
-
-  https://devdocs.magento.com/guides/v2.4/ext-best-practices/tutorials/dynamic-row-system-config.html
-
-  https://www.atwix.com/magento-2/dynamic-fields-in-system-configuration/
-
--->
-
