@@ -1,13 +1,17 @@
 <?xml version="1.0"?>
 
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-    <!--
-    https://magento.stackexchange.com/questions/152350/magento-2-sales-order-place-after-not-returning-order-id
-    -->
-
-    <!--
-    <type name="Magento\Sales\Api\OrderManagementInterface">
-        <plugin name="transom_aws_fraud_detector_create_management_plugin" type="Transom\AWSFraudDetector\Plugin\Sales\Api\OrderManagementInterfacePlugin"/>
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="sales_order_grid_data_source" xsi:type="string">Transom\AWSFraudDetector\Model\ResourceModel\Order\Grid\Collection</item>
+            </argument>
+        </arguments>
     </type>
-    -->
+    <type name="Transom\AWSFraudDetector\Model\ResourceModel\Order\Grid\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">sales_order_grid</argument>
+            <argument name="resourceModel" xsi:type="string">Magento\Sales\Model\ResourceModel\Order</argument>
+        </arguments>
+    </type>
 </config>

@@ -1,0 +1,20 @@
+{
+
+    "aws_order_score": {
+        "column": {
+            "aws_order_score_id": true,
+            "order_id": true,
+
+            todo update for aws,
+
+            "risk_score": true,
+            "risk_decision": true,
+
+            "updated": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "AWS_ORDER_SCORE_ORDER_ID_SALES_ORDER_ENTITY_ID": true
+        }
+    }
+}

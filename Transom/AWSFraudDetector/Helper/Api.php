@@ -8,19 +8,19 @@
  * @copyright   Copyright (c) Transom Group. All rights reserved. (https://transom-group.com/)
  */
 
-namespace Transom\AWSFraudDetector\Observer\Events;
+namespace Transom\AWSFraudDetector\Helper;
 
-use DateTime;
-use Magento\Framework\Event\ObserverInterface;
+use Aws\FraudDetector\FraudDetectorClient;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
-use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Psr\Log\LoggerInterface;
-use Aws\FraudDetector\FraudDetectorClient;
 use Transom\AWSFraudDetector\Model\ConfigSettings;
+use Transom\AWSFraudDetector\Model\OrderManager;
+use Transom\AWSFraudDetector\Model\OrderScoreFactory;
+use Transom\AWSFraudDetector\Model\ResourceModel\OrderScore;
 
 
-class CreateOrderObserver implements ObserverInterface
+class Api extends \Magento\Framework\App\Helper\AbstractHelper
 {
 
     /**
@@ -33,76 +33,24 @@ class CreateOrderObserver implements ObserverInterface
      */
     protected $config;
 
-    /**
-     * @var DateTime
-     */
-    protected $eventDate;
 
     /**
-     * @var \Magento\Framework\HTTP\PhpEnvironment\RemoteAddress
+     * send transaction event data to ipqs
+     * @param $order
+     * @return \Transom\AWSFraudDetector\Helper\Api
      */
-    private $remoteAddress;
-
-    /**
-     * @var \Magento\Sales\Api\OrderRepositoryInterface
-     */
-    private $orderRepository;
-
-
-    /**
-     * CreateOrderObserver constructor.
-     *
-     * @param LoggerInterface $logger
-     * @param ConfigSettings $config
-     * @param DateTime $eventDate
-     * @param RemoteAddress $remoteAddress
-     */
-    public function __construct(LoggerInterface $logger,
-                                ConfigSettings $config,
-                                DateTime $eventDate,
-                                OrderRepositoryInterface $orderRepository,
-                                RemoteAddress $remoteAddress)
+    public function sendTransaction(\Magento\Sales\Model\Order\Interceptor $order, \Magento\Sales\Model\Order\Payment\Interceptor $payment)
     {
-        $this->logger = $logger;
-        $this->config = $config;
-        $this->eventDate =  $eventDate;
-        $this->orderRepository = $orderRepository;
-        $this->remoteAddress = $remoteAddress;
-    }
-
-
-    /**
-     * @param \Magento\Framework\Event\Observer $observer
-     * @return $this
-     */
-    public function execute(\Magento\Framework\Event\Observer $observer)
-    {
-        // only process order if this service is enable
-        if (!$this->config->isApiActive()) {
-            return $this;
-        }
 
         // get cretentials, create AWS API client instance
-        if ($this->config->isApiAccessKeysInAdmin()) {
-            $client = new FraudDetectorClient([
-                'version' => 'latest',
-                'region' => $this->config->getApiAwsRegion(),
-                'credentials' => [
-                    'key' => $this->config->getApiIamKey(),
-                    'secret' => $this->config->getApiIamSecret()
-                ]
-            ]);
-        } else {
-            // TODO get creds from env
-            $this->logger->info('TODO hook up dont manage credentals in admin option.');
-            return $this;
-        }
-
-        // get payment
-        $payment = $observer->getData('payment');
-
-        // get order
-        $order = $payment->getOrder();
+        $client = new FraudDetectorClient([
+            'version' => 'latest',
+            'region' => $this->config->getApiAwsRegion(),
+            'credentials' => [
+                'key' => $this->config->getApiIamKey(),
+                'secret' => $this->config->getApiIamSecret()
+            ]
+        ]);
 
         //  if order data is empty then doesn't need to process
         if (empty($order)) {
@@ -237,5 +185,6 @@ class CreateOrderObserver implements ObserverInterface
             $this->logger->critical('Exception in Transom CreateOrderObserver -- ' . $exception->getMessage());
             // let order complete
         }
+
     }
 }

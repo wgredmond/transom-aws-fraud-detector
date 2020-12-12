@@ -106,23 +106,6 @@ class ConfigSettings
 
 
     /**
-     * Is AWS Fraud Detector - Manager API access keys in admin?
-     *
-     * @param int|null $storeId
-     * @return bool
-     */
-    public function isApiAccessKeysInAdmin($storeId = null)
-    {
-        $enabled = $this->scopeConfig->isSetFlag(
-            'fraud_protection/transom_aws_fraud_detector/api_access_keys_enabled',
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-        return $enabled;
-    }
-
-
-    /**
      * AWS IAM Key
      *
      * @param int|null $storeId

@@ -5,7 +5,6 @@
             <transom_aws_fraud_detector>
                 <api_enabled>1</api_enabled>
                 <api_aws_region>us-east-1</api_aws_region>
-                <api_access_keys_enabled>1</api_access_keys_enabled>
                 <api_iam_key/>
                 <api_iam_secret/>
                 <detector_id/>
