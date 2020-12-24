@@ -56,7 +56,11 @@ class OrderObserver implements ObserverInterface
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
-        $localDebug = true;
+        //$localDebug = true;
+        $localDebug = false;
+
+        $eventName = $observer->getEvent()->getName();
+
         if ($localDebug) {
             $this->logger->info('[AWSFraudDetector] OrderObserver BEGIN [' . microtime() . ']');
         }
@@ -71,7 +75,6 @@ class OrderObserver implements ObserverInterface
 
         // TODO - start debug
         if ($localDebug) {
-            $eventName = $observer->getEvent()->getName();
             $this->logger->info('[AWSFraudDetector] [' . $eventName . '] data type = ' . getType($observer->getData()));
             $this->logger->info('[AWSFraudDetector] [' . $eventName . '] event name = ' . $observer->getEvent()->getName());
             foreach ($observer->getData() as $key => $value) {
@@ -177,9 +180,16 @@ class OrderObserver implements ObserverInterface
             $this->api->sendTransaction($order, $payment);
         }
 
+        //
+        // Recoverable Error: Object of class Magento\Sales\Api\Data\OrderExtension could not be converted to string in
+        // /var/www/vhosts/dev.m2.local.com/app/code/Transom/AWSFraudDetector/Observer/Events/OrderObserver.php on line 185
+        //
+
         if ($eventName === 'sales_order_save_after') {
             $extAttribs = $order->getExtensionAttributes();
-            //$this->api->saveOrderScore($order->getId(), $extAttribs->getIpqsRiskScore(), $extAttribs->getIpqsRiskDecision());
+            if (!empty($extAttribs->getAwsOutcome())) {
+                $this->api->saveOrderScore($order->getId(), $extAttribs->getAwsInsightScore(), $extAttribs->getAwsOutcome());
+            }
         }
 
         if ($localDebug) {

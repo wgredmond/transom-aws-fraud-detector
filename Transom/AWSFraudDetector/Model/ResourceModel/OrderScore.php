@@ -14,7 +14,7 @@ class OrderScore extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 
     protected function _construct()
     {
-        $this->_init('aws_order_score', 'aws_order_score_id');
+        $this->_init('aws_fraud_order_score', 'aws_fraud_order_score_id');
     }
 
 }

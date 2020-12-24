@@ -14,11 +14,11 @@ namespace Transom\AWSFraudDetector\Model;
 class OrderScore extends \Magento\Framework\Model\AbstractModel implements \Magento\Framework\DataObject\IdentityInterface
 {
 
-    const CACHE_TAG = 'aws_order_score';
+    const CACHE_TAG = 'aws_fraud_order_score';
 
-    protected $_cacheTag = 'aws_order_score';
+    protected $_cacheTag = 'aws_fraud_order_score';
 
-    protected $_eventPrefix = 'aws_order_score';
+    protected $_eventPrefix = 'aws_fraud_order_score';
 
     protected function _construct()
     {

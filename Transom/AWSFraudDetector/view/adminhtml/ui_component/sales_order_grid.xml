@@ -2,24 +2,22 @@
 <listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
     <columns name="sales_order_columns">
 
-        <!--
-        <column name="risk_score">
+        <column name="insight_score">
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
                     <item name="filter" xsi:type="string">text</item>
-                    <item name="label" xsi:type="string" translate="true">IPQS Risk Score</item>
+                    <item name="label" xsi:type="string" translate="true">AWS Fraud Insight Score</item>
                 </item>
             </argument>
         </column>
-        <column name="risk_decision">
+        <column name="outcome">
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
                     <item name="filter" xsi:type="string">text</item>
-                    <item name="label" xsi:type="string" translate="true">IPQS Risk Decision</item>
+                    <item name="label" xsi:type="string" translate="true">AWS Fraud Outcome</item>
                 </item>
             </argument>
         </column>
-        -->
 
     </columns>
 </listing>

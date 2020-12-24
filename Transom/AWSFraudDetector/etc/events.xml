@@ -4,7 +4,12 @@
 
     <event name="sales_order_payment_place_end">
         <observer name="transom_aws_fraud_detector_payment_place_end_event"
-                  instance="Transom\AWSFraudDetector\Observer\Events\CreateOrderObserver"/>
+                  instance="Transom\AWSFraudDetector\Observer\Events\OrderObserver"/>
+    </event>
+
+    <event name="sales_order_save_after">
+        <observer name="transom_aws_fraud_detector_payment_save_after_event"
+                  instance="Transom\AWSFraudDetector\Observer\Events\OrderObserver"/>
     </event>
 
 </config>

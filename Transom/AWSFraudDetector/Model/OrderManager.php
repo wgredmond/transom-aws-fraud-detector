@@ -36,10 +36,22 @@ class OrderManager {
      * @param $order
      * @param $fraudScore
      */
-    public function updateOrderStatus($result, $order) {
+    public function updateOrderStatus($insightScore, $outcome, $scoreName, $order) {
 
-
-
+        // update order status
+        if ($outcome == 'legit') {
+            $order->addStatusToHistory($order->getStatus(), 'Legit order, AWS insight score [' . $scoreName . ']: '.$insightScore, false);
+        } else if ($outcome == 'block_order') {
+            $order->setHoldBeforeState($order->getState());
+            $order->setHoldBeforeStatus($order->getStatus());
+            $order->setState(Order::STATE_HOLDED);
+            $order->setStatus(Order::STATUS_FRAUD);
+            $order->addStatusToHistory(Order::STATUS_FRAUD, 'Setting order status to suspected fraud and state to on hold - for order review.  AWS insight score [' . $scoreName . ']: '.$insightScore, false);
+        } else if ($outcome == 'cancel_order') {
+            $order->setState(Order::STATE_CANCELED);
+            $order->setStatus(Order::STATUS_FRAUD);
+            $order->addStatusToHistory(Order::STATUS_FRAUD, 'Setting order status to suspected fraud and state cancel.  AWS insight score [' . $scoreName . ']: '.$insightScore, false);
+        }
 
     }
 //  {

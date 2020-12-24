@@ -28,9 +28,8 @@ class Collection extends OriginalCollection
 
     protected function _renderFiltersBefore()
     {
-        $joinTable = $this->getTable('aws_order_score');
-        // todo replace 'risk_score','risk_decision'
-        $this->getSelect()->joinLeft($joinTable, 'main_table.entity_id = aws_order_score.order_id', ['risk_score','risk_decision']);
+        $joinTable = $this->getTable('aws_fraud_order_score');
+        $this->getSelect()->joinLeft($joinTable, 'main_table.entity_id = aws_fraud_order_score.order_id', ['insight_score','outcome']);
         parent::_renderFiltersBefore();
     }
 }

@@ -11,8 +11,8 @@
 namespace Transom\AWSFraudDetector\Helper;
 
 use Aws\FraudDetector\FraudDetectorClient;
+use DateTime;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
-use Magento\Sales\Model\Order;
 use Psr\Log\LoggerInterface;
 use Transom\AWSFraudDetector\Model\ConfigSettings;
 use Transom\AWSFraudDetector\Model\OrderManager;
@@ -33,9 +33,57 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
      */
     protected $config;
 
+    /**
+     * @var \Transom\AWSFraudDetector\Model\OrderScoreFactory
+     */
+    protected $orderScoreFactory;
 
     /**
-     * send transaction event data to ipqs
+     * @var \Transom\AWSFraudDetector\Model\ResourceModel\OrderScore
+     */
+    protected $orderScoreResource;
+
+    /**
+     * @var \Transom\AWSFraudDetector\Model\OrderManager
+     */
+    protected $orderManager;
+
+    /**
+     * @var DateTime
+     */
+    protected $eventDate;
+
+
+    /**
+     * Api constructor.
+     * @param LoggerInterface $logger
+     * @param ConfigSettings $config
+     * @param OrderScoreFactory $orderScoreFactory
+     * @param OrderScore $orderScoreResource
+     * @param OrderManager $orderManager
+     * @param DateTime $eventDate
+     * @param RemoteAddress $remoteAddress
+     */
+    public function __construct(LoggerInterface $logger,
+                                ConfigSettings $config,
+                                OrderScoreFactory $orderScoreFactory,
+                                OrderScore $orderScoreResource,
+                                OrderManager $orderManager,
+                                DateTime $eventDate,
+                                RemoteAddress $remoteAddress)
+    {
+        $this->logger = $logger;
+        $this->config = $config;
+        $this->orderScoreFactory = $orderScoreFactory;
+        $this->orderScoreResource = $orderScoreResource;
+        $this->orderManager = $orderManager;
+        $this->eventDate =  $eventDate;
+        $this->remoteAddress = $remoteAddress;
+    }
+
+
+    /**
+     * send transaction event data to aws
      * @param $order
      * @return \Transom\AWSFraudDetector\Helper\Api
      */
@@ -54,7 +102,7 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
 
         //  if order data is empty then doesn't need to process
         if (empty($order)) {
-            $this->logger->info('There is an error in CreateOrderObserver');
+            $this->logger->info('There is an error in sendTransation()');
             return $this;
         }
 
@@ -105,6 +153,8 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
         $eventTime = $this->eventDate->format('Y-m-d\TH:i:s.') . gettimeofday()['usec'] . 'Z';
         $eventId = $orderId . '-' . $this->eventDate->format('Y-m-d_H-i-s-') . gettimeofday()['usec'];
 
+        // Notice: Undefined property: Transom\AWSFraudDetector\Helper\Api::$eventDate in /var/www/vhosts/dev.m2.local.com/app/code/Transom/AWSFraudDetector/Helper/Api.php on line 143
+
         // populate session variables
         $ipAddress = $this->remoteAddress->getRemoteAddress();
         //$session            = $this->customerSession->getMyValue();
@@ -134,6 +184,7 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
                     'billing_state' => strval($billingRegion),
                     'billing_zip' => strval($billingZipCode),
                     'billing_country' => strval($billingCountry),
+                    'billing_phone_number' => strval($billingTelephone),
 
                     'shipping_name' => strval($shippingName),
                     'shipping_address_1' => strval($shippingAddress1),
@@ -141,8 +192,10 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
                     'shipping_state' => strval($shippingRegion),
                     'shipping_zip' => strval($shippingZipCode),
                     'shipping_country' => strval($shippingCountry),
+                    'shipping_phone_number' => strval($shippingTelephone),
 
                     'payment_instrument_type' => 'credit_card',
+                    'credit_card_type' => 'n/a',
                     'total_order_price' => strval($orderAmount),
                     'currency_code' => $orderCurrency,
 
@@ -165,26 +218,39 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
             }
 
             // update order status
-            if ($outcome == 'legit') {
-                $order->addStatusToHistory($order->getStatus(), 'Legit order, AWS insight score [' . $scoreName . ']: '.$insightScore, false);
-            } else if ($outcome == 'block_order') {
-                $order->setHoldBeforeState($order->getState());
-                $order->setHoldBeforeStatus($order->getStatus());
-                $order->setState(Order::STATE_HOLDED);
-                $order->setStatus(Order::STATUS_FRAUD);
-                $order->addStatusToHistory(Order::STATUS_FRAUD, 'Setting order status to suspected fraud and state to on hold - for order review.  AWS insight score [' . $scoreName . ']: '.$insightScore, false);
-                $this->orderRepository->save($order);
-            } else if ($outcome == 'cancel_order') {
-                $order->setState(Order::STATE_CANCELED);
-                $order->setStatus(Order::STATUS_FRAUD);
-                $order->addStatusToHistory(Order::STATUS_FRAUD, 'Setting order status to suspected fraud and state cancel.  AWS insight score [' . $scoreName . ']: '.$insightScore, false);
-                $this->orderRepository->save($order);
-            }
+            $this->orderManager->updateOrderStatus($insightScore, $outcome, $scoreName, $order);
+            $this->logger->info(' ### In sendTransaction(); insightScore = ' . $insightScore);
+            $this->logger->info(' ### In sendTransaction(); outcome = ' . $outcome);
+
+            // save score and outcome to order extension attributes
+            $order->getExtensionAttributes()->setAwsInsightScore($insightScore);
+            $order->getExtensionAttributes()->setAwsOutcome($outcome);
 
         } catch (\Throwable $exception) {
-            $this->logger->critical('Exception in Transom CreateOrderObserver -- ' . $exception->getMessage());
+            $this->logger->critical('Exception in OrderObserver -- ' . $exception->getMessage());
             // let order complete
         }
+    }
 
+
+    /**
+     * @param $orderId
+     * @param $insightScore
+     * @param $outcome
+     */
+    public function saveOrderScore($orderId, $insightScore, $outcome) {
+        $this->logger->info(' ### In saveOrderScore(); orderId = ' . $orderId);
+        $this->logger->info(' ### In saveOrderScore(); insightScore = ' . $insightScore);
+        $this->logger->info(' ### In saveOrderScore(); outcome = ' . $outcome);
+
+        try {
+            $orderScoreInterface = $this->orderScoreFactory->create();
+            $orderScoreInterface->setData('order_id', $orderId);
+            $orderScoreInterface->setData('insight_score', $insightScore);
+            $orderScoreInterface->setData('outcome', $outcome);
+            $this->orderScoreResource->save($orderScoreInterface);
+        } catch (\Exception $e) {
+            $this->logger->info('Exception saving AWS Fraud score: ' . $e->getMessage());
+        }
     }
 }
