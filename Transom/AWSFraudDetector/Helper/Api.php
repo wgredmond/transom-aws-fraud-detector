@@ -13,6 +13,7 @@ namespace Transom\AWSFraudDetector\Helper;
 use Aws\FraudDetector\FraudDetectorClient;
 use DateTime;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
+use Magento\Sales\Model\Order;
 use Psr\Log\LoggerInterface;
 use Transom\AWSFraudDetector\Model\ConfigSettings;
 use Transom\AWSFraudDetector\Model\OrderManager;
@@ -89,8 +90,19 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function sendTransaction(\Magento\Sales\Model\Order\Interceptor $order, \Magento\Sales\Model\Order\Payment\Interceptor $payment)
     {
+        $localDebug = true;
+        //$localDebug = false;
+
+        if ($localDebug) {
+            $this->logger->info(' ### In sendTransaction()');
+        }
 
         // get cretentials, create AWS API client instance
+        if ($localDebug) {
+            $this->logger->info(' ### In sendTransaction(); region = ' . $this->config->getApiAwsRegion());
+            $this->logger->info(' ### In sendTransaction(); key = ' . $this->config->getApiIamKey());
+            $this->logger->info(' ### In sendTransaction(); secret = ' . $this->config->getApiIamSecret());
+        }
         $client = new FraudDetectorClient([
             'version' => 'latest',
             'region' => $this->config->getApiAwsRegion(),
@@ -99,6 +111,9 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
                 'secret' => $this->config->getApiIamSecret()
             ]
         ]);
+        if ($localDebug) {
+            $this->logger->info(' ### In sendTransaction(); client region = ' . $client->getRegion());
+        }
 
         //  if order data is empty then doesn't need to process
         if (empty($order)) {
@@ -153,8 +168,6 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
         $eventTime = $this->eventDate->format('Y-m-d\TH:i:s.') . gettimeofday()['usec'] . 'Z';
         $eventId = $orderId . '-' . $this->eventDate->format('Y-m-d_H-i-s-') . gettimeofday()['usec'];
 
-        // Notice: Undefined property: Transom\AWSFraudDetector\Helper\Api::$eventDate in /var/www/vhosts/dev.m2.local.com/app/code/Transom/AWSFraudDetector/Helper/Api.php on line 143
-
         // populate session variables
         $ipAddress = $this->remoteAddress->getRemoteAddress();
         //$session            = $this->customerSession->getMyValue();
@@ -162,6 +175,9 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
 
         // call AWS api for you detector to get create order prediction
         $detectorId = $this->config->getDetectorId();
+        if ($localDebug) {
+            $this->logger->info(' ### In sendTransaction(); Calling GetEventPrediction; detectorId = ' . $detectorId);
+        }
         try {
             $result = $client->GetEventPrediction([
                 'detectorId' => $detectorId,
@@ -207,20 +223,44 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
 
             // get AWS score and outcome
             $scoreName = $this->config->getScoreName();
+            $outcome = $this->config->getOutcomeLegit();  // initialize outcome to 'legit'
+
+            if ($localDebug) {
+                $this->logger->info(' ### In sendTransaction(); scoreName = ' . $scoreName);
+            }
             $modelScores = $result->get('modelScores');
             $ruleResults = $result->get('ruleResults');
-            $outcome = 'legit';
+
+            // get model version info
+            if ($localDebug) {
+                if (!empty($modelScores[0]['modelVersion'])) {
+                    $modelVersionId = $modelScores[0]['modelVersion']['modelId'];
+                    $modelVersionType = $modelScores[0]['modelVersion']['modelType'];
+                    $modelVersionVersionNumber = $modelScores[0]['modelVersion']['modelVersionNumber'];
+                    $this->logger->info(' ### In sendTransaction(); info = ' . $modelVersionId . ' :: ' . $modelVersionType . ' :: ' . $modelVersionVersionNumber . ' :: ');
+                }
+            }
+
+            // get the score
             if (!empty($modelScores[0]['scores'][$scoreName])) {
                 $insightScore = $modelScores[0]['scores'][$scoreName];
             }
+
+            // get outcome
             if (!empty($ruleResults[0]['outcomes'])) {
                 $outcome = $ruleResults[0]['outcomes'][0];
+                if ($localDebug) {
+                    $ruleId = $ruleResults[0]['ruleId'];
+                    $this->logger->info(' ### In sendTransaction(); ruleId = ' . $ruleId);
+                }
             }
 
             // update order status
             $this->orderManager->updateOrderStatus($insightScore, $outcome, $scoreName, $order);
-            $this->logger->info(' ### In sendTransaction(); insightScore = ' . $insightScore);
-            $this->logger->info(' ### In sendTransaction(); outcome = ' . $outcome);
+            if ($localDebug) {
+                $this->logger->info(' ### In sendTransaction(); insightScore = ' . $insightScore);
+                $this->logger->info(' ### In sendTransaction(); outcome = ' . $outcome);
+            }
 
             // save score and outcome to order extension attributes
             $order->getExtensionAttributes()->setAwsInsightScore($insightScore);
@@ -243,11 +283,27 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
         $this->logger->info(' ### In saveOrderScore(); insightScore = ' . $insightScore);
         $this->logger->info(' ### In saveOrderScore(); outcome = ' . $outcome);
 
+        $message = "Legit order.";
+        if ($outcome == $this->config->getOutcomeReview()) {
+            if ($this->config->isUpdateOrderStatus()) {
+                $message = "Order placed on hold and is under review.";
+            } else {
+                $message = "[Order status update is disabled] Order would be under review.";
+            }
+        } else if ($outcome == $this->config->getOutcomeCancel()) {
+            if ($this->config->isUpdateOrderStatus()) {
+                $message = "Order has been cancelled.";
+            } else {
+                $message = "[Order status update is disabled] Order would have been cancelled.";
+            }
+        }
+
         try {
             $orderScoreInterface = $this->orderScoreFactory->create();
             $orderScoreInterface->setData('order_id', $orderId);
             $orderScoreInterface->setData('insight_score', $insightScore);
             $orderScoreInterface->setData('outcome', $outcome);
+            $orderScoreInterface->setData('message', $message);
             $this->orderScoreResource->save($orderScoreInterface);
         } catch (\Exception $e) {
             $this->logger->info('Exception saving AWS Fraud score: ' . $e->getMessage());

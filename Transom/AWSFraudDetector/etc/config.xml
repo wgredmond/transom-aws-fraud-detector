@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
-        <fraud_protection>
+        <trust_and_safety>
             <transom_aws_fraud_detector>
                 <api_enabled>1</api_enabled>
                 <api_aws_region>us-east-1</api_aws_region>
@@ -9,8 +9,14 @@
                 <api_iam_secret/>
                 <detector_id/>
                 <score_name/>
-                <model_upload_enabled>1</model_upload_enabled>
+                <outcome_legit>legit_order</outcome_legit>
+                <!--
+                <outcome_review>review_order</outcome_review>
+                -->
+                <outcome_review>block_order</outcome_review>
+                <outcome_cancel>cancel_order</outcome_cancel>
+                <update_order_status>0</update_order_status>
             </transom_aws_fraud_detector>
-        </fraud_protection>
+        </trust_and_safety>
     </default>
 </config>

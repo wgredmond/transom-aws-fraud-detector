@@ -29,7 +29,7 @@ class Collection extends OriginalCollection
     protected function _renderFiltersBefore()
     {
         $joinTable = $this->getTable('aws_fraud_order_score');
-        $this->getSelect()->joinLeft($joinTable, 'main_table.entity_id = aws_fraud_order_score.order_id', ['insight_score','outcome']);
+        $this->getSelect()->joinLeft($joinTable, 'main_table.entity_id = aws_fraud_order_score.order_id', ['insight_score','message']);
         parent::_renderFiltersBefore();
     }
 }

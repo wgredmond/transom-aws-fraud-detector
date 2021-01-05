@@ -7,6 +7,7 @@
         <column xsi:type="int" name="order_id" padding="10" unsigned="true" nullable="false" comment="Order Id"/>
         <column xsi:type="int" name="insight_score" unsigned="false" nullable="false" comment="Insight Score"/>
         <column xsi:type="varchar" name="outcome" nullable="true" length="100" comment="Outcome"/>
+        <column xsi:type="varchar" name="message" nullable="true" length="255" comment="Message"/>
         <column xsi:type="timestamp" name="updated" nullable="false" on_update="true" default="CURRENT_TIMESTAMP" comment="Updated"/>
 
         <constraint xsi:type="primary" referenceId="PRIMARY">
@@ -14,7 +15,6 @@
         </constraint>
 
         <constraint xsi:type="foreign" referenceId="AWS_FRAUD_ORDER_SCORE_ORDER_ID_SALES_ORDER_ENTITY_ID" table="aws_fraud_order_score" column="order_id" referenceTable="sales_order" referenceColumn="entity_id" onDelete="CASCADE"/>
-
     </table>
 
 </schema>

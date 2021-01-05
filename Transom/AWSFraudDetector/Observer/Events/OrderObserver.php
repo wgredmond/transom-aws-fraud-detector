@@ -180,11 +180,6 @@ class OrderObserver implements ObserverInterface
             $this->api->sendTransaction($order, $payment);
         }
 
-        //
-        // Recoverable Error: Object of class Magento\Sales\Api\Data\OrderExtension could not be converted to string in
-        // /var/www/vhosts/dev.m2.local.com/app/code/Transom/AWSFraudDetector/Observer/Events/OrderObserver.php on line 185
-        //
-
         if ($eventName === 'sales_order_save_after') {
             $extAttribs = $order->getExtensionAttributes();
             if (!empty($extAttribs->getAwsOutcome())) {

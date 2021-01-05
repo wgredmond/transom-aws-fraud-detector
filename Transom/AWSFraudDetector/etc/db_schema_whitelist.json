@@ -5,6 +5,7 @@
             "order_id": true,
             "insight_score": true,
             "outcome": true,
+            "message": true,
             "updated": true
         },
         "constraint": {

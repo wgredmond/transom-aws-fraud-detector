@@ -11,14 +11,14 @@
                     <label>API Configuration</label>
                     <field id="api_enabled" translate="label" sortOrder="10" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Enabled</label>
-                        <config_path>fraud_protection/transom_aws_fraud_detector/api_enabled</config_path>
+                        <config_path>trust_and_safety/transom_aws_fraud_detector/api_enabled</config_path>
                         <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                         <comment><![CDATA[Enable or disable the Transom AWS Fraud Detector API inetgration.]]></comment>
                     </field>
 
                     <field id="aws_region" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Region</label>
-                        <config_path>fraud_protection/transom_aws_fraud_detector/api_aws_region</config_path>
+                        <config_path>trust_and_safety/transom_aws_fraud_detector/api_aws_region</config_path>
                         <validate>required-entry</validate>
                         <comment><![CDATA[AWS Fraud Detector region.]]></comment>
                         <depends>
@@ -28,7 +28,7 @@
 
                     <field id="detector_id" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Detector Id</label>
-                        <config_path>fraud_protection/transom_aws_fraud_detector/detector_id</config_path>
+                        <config_path>trust_and_safety/transom_aws_fraud_detector/detector_id</config_path>
                         <validate>required-entry</validate>
                         <comment><![CDATA[Detector id.]]></comment>
                         <depends>
@@ -38,7 +38,7 @@
 
                     <field id="score_name" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Score Name</label>
-                        <config_path>fraud_protection/transom_aws_fraud_detector/score_name</config_path>
+                        <config_path>trust_and_safety/transom_aws_fraud_detector/score_name</config_path>
                         <validate>required-entry</validate>
                         <comment><![CDATA[Score name.]]></comment>
                         <depends>
@@ -48,7 +48,7 @@
 
                     <field id="iam_key" translate="label" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Key</label>
-                        <config_path>fraud_protection/transom_aws_fraud_detector/api_iam_key</config_path>
+                        <config_path>trust_and_safety/transom_aws_fraud_detector/api_iam_key</config_path>
                         <comment><![CDATA[AWS API access key]]></comment>
                         <depends>
                             <field id="api_enabled">1</field>
@@ -57,10 +57,21 @@
 
                     <field id="iam_secret" translate="label" type="obscure" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Secret</label>
-                        <config_path>fraud_protection/transom_aws_fraud_detector/api_iam_secret</config_path>
+                        <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                        <config_path>trust_and_safety/transom_aws_fraud_detector/api_iam_secret</config_path>
                         <comment><![CDATA[AWS API secret]]></comment>
                         <depends>
                             <field id="api_enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="updateOrderStatus" translate="label comment" sortOrder="80" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Update Order Status</label>
+                        <config_path>trust_and_safety/transom_aws_fraud_detector/update_order_status</config_path>
+                        <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                        <comment><![CDATA[Automatically update order status based on AWS score.  When Update Order Status is disabled we will still add a note to the order with the AWS score information.]]></comment>
+                        <depends>
+                            <field id="trust_and_safety/transom_aws/api_config/api_enabled">1</field>
                         </depends>
                     </field>
                 </group>
