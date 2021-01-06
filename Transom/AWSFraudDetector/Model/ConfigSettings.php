@@ -97,6 +97,39 @@ class ConfigSettings
 
 
     /**
+     * Rule Id - Review
+     *
+     * @param int|null $storeId
+     * @return string
+     */
+    public function getRuleIdReview($storeId = null)
+    {
+        $ruleId = $this->scopeConfig->getValue(
+            'trust_and_safety/transom_aws_fraud_detector/rule_id_review',
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+        return $ruleId;
+    }
+
+    /**
+     * Rule Id - Cancel
+     *
+     * @param int|null $storeId
+     * @return string
+     */
+    public function getRuleIdCancel($storeId = null)
+    {
+        $ruleId = $this->scopeConfig->getValue(
+            'trust_and_safety/transom_aws_fraud_detector/rule_id_cancel',
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+        return $ruleId;
+    }
+
+
+    /**
      * Score name
      *
      * @param int|null $storeId
@@ -211,5 +244,32 @@ class ConfigSettings
         $iamSecret = $this->encryptor->decrypt($iamSecret);
 
         return $iamSecret;
+    }
+
+    /**
+     * Cancel Threshold
+     * @return int
+     */
+    public function getCancelThreshold()
+    {
+        $cancelThreshold = $this->scopeConfig->getValue(
+            'trust_and_safety/transom_aws_fraud_detector/cancel_threshold',
+            ScopeInterface::SCOPE_WEBSITE
+        );
+        return intval($cancelThreshold);
+    }
+
+
+    /**
+     * Review Threshold
+     * @return int
+     */
+    public function getReviewThreshold()
+    {
+        $reviewThreshold = $this->scopeConfig->getValue(
+            'trust_and_safety/transom_aws_fraud_detector/review_threshold',
+            ScopeInterface::SCOPE_WEBSITE
+        );
+        return intval($reviewThreshold);
     }
 }

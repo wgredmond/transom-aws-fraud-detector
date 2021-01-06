@@ -6,6 +6,7 @@
             "insight_score": true,
             "outcome": true,
             "message": true,
+            "is_status_update_enabled": true,
             "updated": true
         },
         "constraint": {

@@ -64,6 +64,7 @@ class OrderObserver implements ObserverInterface
         if ($localDebug) {
             $this->logger->info('[AWSFraudDetector] OrderObserver BEGIN [' . microtime() . ']');
         }
+
         // only process order if this service is enable
         if (!$this->config->isApiActive()) {
             if ($localDebug) {
@@ -71,7 +72,6 @@ class OrderObserver implements ObserverInterface
             }
             return $this;
         }
-
 
         // TODO - start debug
         if ($localDebug) {

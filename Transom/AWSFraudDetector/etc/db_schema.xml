@@ -9,6 +9,7 @@
         <column xsi:type="varchar" name="outcome" nullable="true" length="100" comment="Outcome"/>
         <column xsi:type="varchar" name="message" nullable="true" length="255" comment="Message"/>
         <column xsi:type="timestamp" name="updated" nullable="false" on_update="true" default="CURRENT_TIMESTAMP" comment="Updated"/>
+        <column xsi:type="boolean" name="is_status_update_enabled" nullable="false" default="false" comment="Is Status Update Enabled flag"/>
 
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="aws_fraud_order_score_id"/>

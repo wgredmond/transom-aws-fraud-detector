@@ -7,8 +7,13 @@
                 <api_aws_region>us-east-1</api_aws_region>
                 <api_iam_key/>
                 <api_iam_secret/>
-                <detector_id/>
                 <score_name/>
+                <detector_id/>
+                <!--
+                <rule_id_review>review_order</rule_id_review>
+                -->
+                <rule_id_review>block</rule_id_review>
+                <rule_id_cancel>cancel</rule_id_cancel>
                 <outcome_legit>legit_order</outcome_legit>
                 <!--
                 <outcome_review>review_order</outcome_review>
@@ -16,6 +21,8 @@
                 <outcome_review>block_order</outcome_review>
                 <outcome_cancel>cancel_order</outcome_cancel>
                 <update_order_status>0</update_order_status>
+                <cancel_threshold>850</cancel_threshold>
+                <review_threshold>575</review_threshold>
             </transom_aws_fraud_detector>
         </trust_and_safety>
     </default>

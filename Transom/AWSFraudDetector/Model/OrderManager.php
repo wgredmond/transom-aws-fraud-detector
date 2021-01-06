@@ -44,6 +44,8 @@ class OrderManager {
             $this->logger->info(' ### In updateOrderStatus(); outcome = ' . $outcome);
         }
 
+        $thresholdInfo = ' Review Threshold = ' . $this->config->getReviewThreshold() . '; Cancel Threshold = ' . $this->config->getCancelThreshold() . '.';
+
         // update order status
         if ($outcome == $this->config->getOutcomeLegit()) {
             if ($localDebug) {
@@ -59,12 +61,12 @@ class OrderManager {
                 $order->setHoldBeforeStatus($order->getStatus());
                 $order->setState(Order::STATE_HOLDED);
                 $order->setStatus(Order::STATUS_FRAUD);
-                $order->addStatusToHistory(Order::STATUS_FRAUD, 'Order is under review. -- Setting order status to suspected fraud and state to on hold.  AWS insight score [' . $scoreName . ']: ' . $insightScore, false);
+                $order->addStatusToHistory(Order::STATUS_FRAUD, 'Order is under review. Setting order status to suspected fraud and state to on hold.  AWS insight score [' . $scoreName . ']: ' . $insightScore . ';' . $thresholdInfo, false);
             } else {
                 if ($localDebug) {
                     $this->logger->info(' ### In updateOrderStatus(); Order would be under review. Only adding status note.');
                 }
-                $order->addStatusToHistory(Order::STATUS_FRAUD, '[Order status update is disabled] Order would be under review.  AWS insight score [' . $scoreName . ']: ' . $insightScore, false);
+                $order->addStatusToHistory($order->getStatus(), '[Order status update is disabled] Order would be under review.  AWS insight score [' . $scoreName . ']: ' . $insightScore . ';' . $thresholdInfo, false);
             }
         } else if ($outcome == $this->config->getOutcomeCancel()) {
             if ($this->config->isUpdateOrderStatus()) {
@@ -73,12 +75,12 @@ class OrderManager {
                 }
                 $order->setState(Order::STATE_CANCELED);
                 $order->setStatus(Order::STATUS_FRAUD);
-                $order->addStatusToHistory(Order::STATUS_FRAUD, 'Order is cacelled. Setting order status to suspected fraud and state cancel.  AWS insight score [' . $scoreName . ']: ' . $insightScore, false);
+                $order->addStatusToHistory(Order::STATUS_FRAUD, 'Order is cacelled. Setting order status to suspected fraud and state cancel.  AWS insight score [' . $scoreName . ']: ' . $insightScore . ';' . $thresholdInfo, false);
             } else {
                 if ($localDebug) {
-                    $this->logger->info(' ### In updateOrderStatus(); OOrder would have been cancelled. Only adding status note.');
+                    $this->logger->info(' ### In updateOrderStatus(); Order would have been cancelled. Only adding status note.');
                 }
-                $order->addStatusToHistory(Order::STATUS_FRAUD, '[Order status update is disabled] Order would have been cancelled.  AWS insight score [' . $scoreName . ']: ' . $insightScore, false);
+                $order->addStatusToHistory($order->getStatus(), '[Order status update is disabled] Order would have been cancelled.  AWS insight score [' . $scoreName . ']: ' . $insightScore . ';' . $thresholdInfo, false);
             }
         }
     }

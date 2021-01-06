@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+
+    <event name="admin_system_config_changed_section_trust_and_safety">
+        <observer name="transom_aws_fraud_detector_config_change"
+                  instance="Transom\AWSFraudDetector\Observer\Events\AdminConfigChange"/>
+    </event>
+
+</config>

@@ -97,12 +97,12 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
             $this->logger->info(' ### In sendTransaction()');
         }
 
-        // get cretentials, create AWS API client instance
-        if ($localDebug) {
-            $this->logger->info(' ### In sendTransaction(); region = ' . $this->config->getApiAwsRegion());
-            $this->logger->info(' ### In sendTransaction(); key = ' . $this->config->getApiIamKey());
-            $this->logger->info(' ### In sendTransaction(); secret = ' . $this->config->getApiIamSecret());
+        // only process order if this service is enable
+        if (!$this->config->isApiActive()) {
+            return $this;
         }
+
+        // get cretentials, create AWS API client instance
         $client = new FraudDetectorClient([
             'version' => 'latest',
             'region' => $this->config->getApiAwsRegion(),
@@ -111,9 +111,6 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
                 'secret' => $this->config->getApiIamSecret()
             ]
         ]);
-        if ($localDebug) {
-            $this->logger->info(' ### In sendTransaction(); client region = ' . $client->getRegion());
-        }
 
         //  if order data is empty then doesn't need to process
         if (empty($order)) {
@@ -167,7 +164,9 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
         // populate event variables
         $eventTime = $this->eventDate->format('Y-m-d\TH:i:s.') . gettimeofday()['usec'] . 'Z';
         $eventId = $orderId . '-' . $this->eventDate->format('Y-m-d_H-i-s-') . gettimeofday()['usec'];
-
+        if ($localDebug) {
+            $this->logger->info(' ### In sendTransaction(); eventTime = ' . $eventTime);
+        }
         // populate session variables
         $ipAddress = $this->remoteAddress->getRemoteAddress();
         //$session            = $this->customerSession->getMyValue();
@@ -175,9 +174,6 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
 
         // call AWS api for you detector to get create order prediction
         $detectorId = $this->config->getDetectorId();
-        if ($localDebug) {
-            $this->logger->info(' ### In sendTransaction(); Calling GetEventPrediction; detectorId = ' . $detectorId);
-        }
         try {
             $result = $client->GetEventPrediction([
                 'detectorId' => $detectorId,
@@ -249,10 +245,6 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
             // get outcome
             if (!empty($ruleResults[0]['outcomes'])) {
                 $outcome = $ruleResults[0]['outcomes'][0];
-                if ($localDebug) {
-                    $ruleId = $ruleResults[0]['ruleId'];
-                    $this->logger->info(' ### In sendTransaction(); ruleId = ' . $ruleId);
-                }
             }
 
             // update order status
@@ -269,6 +261,122 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
         } catch (\Throwable $exception) {
             $this->logger->critical('Exception in OrderObserver -- ' . $exception->getMessage());
             // let order complete
+        }
+    }
+
+
+    /**
+     * update detetor rule
+     * @param $order
+     * @return \Transom\AWSFraudDetector\Helper\Api
+     */
+    public function updateRule()
+    {
+        $localDebug = true;
+        //$localDebug = false;
+
+        if ($localDebug) {
+            $this->logger->info(' ### In updateRule()');
+        }
+
+        // only process rule update if this service is enable
+        if (!$this->config->isApiActive()) {
+            return $this;
+        }
+
+        $client = new FraudDetectorClient([
+            'version' => 'latest',
+            'region' => $this->config->getApiAwsRegion(),
+            'credentials' => [
+                'key' => $this->config->getApiIamKey(),
+                'secret' => $this->config->getApiIamSecret()
+            ]
+        ]);
+
+        try {
+            $detectorId = $this->config->getDetectorId();
+            $scoreName = $this->config->getScoreName();
+            $ruleIdReview = $this->config->getRuleIdReview();
+            $ruleIdCancel = $this->config->getRuleIdCancel();
+            $reviewThreshold = $this->config->getReviewThreshold();
+            $cancelThreshold = $this->config->getCancelThreshold();
+
+            // get current review rule
+            $result = $client->GetRules([
+                'detectorId' => $detectorId,
+                'ruleId' => $ruleIdReview
+            ]);
+            $ruleDetails = $result->get('ruleDetails');
+            $ruleVarReview = sizeof($ruleDetails);
+            $curReviewExpression = $ruleDetails[$ruleVarReview-1]['expression'];
+
+            // get current cancel rule
+            $result = $client->GetRules([
+                'detectorId' => $detectorId,
+                'ruleId' => $ruleIdCancel
+            ]);
+            $ruleDetails = $result->get('ruleDetails');
+            $ruleVarCancel = sizeof($ruleDetails);
+            $curCancelExpression = $ruleDetails[$ruleVarCancel-1]['expression'];
+
+            // update review rule
+            $newReviewExpression = '$' . $scoreName . ' > ' . $reviewThreshold . ' and ' .  '$' . $scoreName . ' < ' . $cancelThreshold;
+            $this->logger->info(' ### In updateRule(); update expression review? ' . ($newReviewExpression != $curReviewExpression));
+            if ($newReviewExpression != $curReviewExpression) {
+                $ruleVarReviewUpdate = $ruleVarReview;
+                if ($ruleVarReview > 1) {
+                    $result = $client->DeleteRule([
+                        'rule' => [
+                            'detectorId' => $detectorId,
+                            'ruleId' => $ruleIdReview,
+                            'ruleVersion' => strval($ruleVarReview)
+                        ]
+                    ]);
+                    $ruleVarReviewUpdate = $ruleVarReview-1;
+                }
+                $result = $client->UpdateRuleVersion([
+                    'expression' => $newReviewExpression,
+                    'language' => 'DETECTORPL',
+                    'outcomes' => array($this->config->getOutcomeReview()),
+                    'rule' => [
+                        'detectorId' => $detectorId,
+                        'ruleId' => $ruleIdReview,
+                        'ruleVersion' => strval($ruleVarReviewUpdate)
+                    ]
+                ]);
+            }
+
+            // update cancel rule
+            $newCancelExpression = '$' . $scoreName . ' >= ' . $cancelThreshold;
+            $this->logger->info(' ### In updateRule(); update expression cancel? ' . ($newCancelExpression != $curCancelExpression));
+            if ($newCancelExpression != $curCancelExpression) {
+                $this->logger->info(' ### In updateRule(); updating expression cancel.');
+                $ruleVarCancelUpdate = $ruleVarCancel;
+                if ($ruleVarCancel > 1) {
+                    $result = $client->DeleteRule([
+                        'rule' => [
+                            'detectorId' => $detectorId,
+                            'ruleId' => $ruleIdCancel,
+                            'ruleVersion' => strval($ruleVarCancel)
+                        ]
+                    ]);
+                    $ruleVarCancelUpdate = $ruleVarCancel-1;
+                }
+                $result = $client->UpdateRuleVersion([
+                    'expression' => $newCancelExpression,
+                    'language' => 'DETECTORPL',
+                    'outcomes' => array($this->config->getOutcomeCancel()),
+                    'rule' => [
+                        'detectorId' => $detectorId,
+                        'ruleId' => $ruleIdCancel,
+                        'ruleVersion' => strval($ruleVarCancelUpdate)
+                    ]
+                ]);
+            }
+
+
+        } catch (\Throwable $exception) {
+            $this->logger->critical('Exception in OrderObserver -- ' . $exception->getMessage());
         }
     }
 
@@ -304,6 +412,7 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
             $orderScoreInterface->setData('insight_score', $insightScore);
             $orderScoreInterface->setData('outcome', $outcome);
             $orderScoreInterface->setData('message', $message);
+            $orderScoreInterface->setData('is_status_update_enabled', $this->config->isUpdateOrderStatus());
             $this->orderScoreResource->save($orderScoreInterface);
         } catch (\Exception $e) {
             $this->logger->info('Exception saving AWS Fraud score: ' . $e->getMessage());
