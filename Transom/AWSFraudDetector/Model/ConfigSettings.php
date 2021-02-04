@@ -272,4 +272,21 @@ class ConfigSettings
         );
         return intval($reviewThreshold);
     }
+
+
+    /**
+     * Event Type name
+     *
+     * @param int|null $storeId
+     * @return string
+     */
+    public function getEventTypeName($storeId = null)
+    {
+        $eventTypeName = $this->scopeConfig->getValue(
+            'trust_and_safety/transom_aws_fraud_detector/event_type_namee',
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+        return $eventTypeName;
+    }
 }

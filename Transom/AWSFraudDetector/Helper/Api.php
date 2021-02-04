@@ -114,7 +114,7 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
 
         //  if order data is empty then doesn't need to process
         if (empty($order)) {
-            $this->logger->info('There is an error in sendTransation()');
+            $this->logger->info('There is an error in sendTransaction()');
             return $this;
         }
 
@@ -177,8 +177,8 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
         try {
             $result = $client->GetEventPrediction([
                 'detectorId' => $detectorId,
-                'eventId' => 'co-' . $eventId,
-                'eventTypeName' => "create_order",
+                'eventId' => 'o-' . $eventId,
+                'eventTypeName' => $this->config->getEventTypeName(),
                 'eventTimestamp' => $eventTime,
                 'entities' => [[
                     'entityType' => 'customer',
@@ -238,6 +238,7 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
             }
 
             // get the score
+            $insightScore = 0;
             if (!empty($modelScores[0]['scores'][$scoreName])) {
                 $insightScore = $modelScores[0]['scores'][$scoreName];
             }
@@ -302,13 +303,16 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
             $cancelThreshold = $this->config->getCancelThreshold();
 
             // get current review rule
+            $this->logger->info(' ### In updateRule(); getting rules for detector: ' . $detectorId);
             $result = $client->GetRules([
                 'detectorId' => $detectorId,
                 'ruleId' => $ruleIdReview
             ]);
             $ruleDetails = $result->get('ruleDetails');
             $ruleVarReview = sizeof($ruleDetails);
+            $this->logger->info(' ### In updateRule(); ruleVarReview: ' . $ruleVarReview);
             $curReviewExpression = $ruleDetails[$ruleVarReview-1]['expression'];
+            $this->logger->info(' ### In updateRule(); curReviewExpression: ' . $curReviewExpression);
 
             // get current cancel rule
             $result = $client->GetRules([
@@ -317,7 +321,9 @@ class Api extends \Magento\Framework\App\Helper\AbstractHelper
             ]);
             $ruleDetails = $result->get('ruleDetails');
             $ruleVarCancel = sizeof($ruleDetails);
+            $this->logger->info(' ### In updateRule(); ruleVarCancel: ' . $ruleVarCancel);
             $curCancelExpression = $ruleDetails[$ruleVarCancel-1]['expression'];
+            $this->logger->info(' ### In updateRule(); curCancelExpression: ' . $curCancelExpression);
 
             // update review rule
             $newReviewExpression = '$' . $scoreName . ' > ' . $reviewThreshold . ' and ' .  '$' . $scoreName . ' < ' . $cancelThreshold;

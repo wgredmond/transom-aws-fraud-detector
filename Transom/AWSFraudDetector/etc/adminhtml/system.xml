@@ -13,14 +13,14 @@
                         <label>Enabled</label>
                         <config_path>trust_and_safety/transom_aws_fraud_detector/api_enabled</config_path>
                         <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
-                        <comment><![CDATA[Enable or disable the Transom AWS Fraud Detector API inetgration.]]></comment>
+                        <comment><![CDATA[Enable or disable the Transom AWS Fraud Detector integration.]]></comment>
                     </field>
 
                     <field id="aws_region" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Region</label>
                         <config_path>trust_and_safety/transom_aws_fraud_detector/api_aws_region</config_path>
                         <validate>required-entry</validate>
-                        <comment><![CDATA[AWS Fraud Detector region.]]></comment>
+                        <comment><![CDATA[The AWS region where Fraud Detector model is being hosted.]]></comment>
                         <depends>
                             <field id="api_enabled">1</field>
                         </depends>
@@ -30,7 +30,7 @@
                         <label>Detector Id</label>
                         <config_path>trust_and_safety/transom_aws_fraud_detector/detector_id</config_path>
                         <validate>required-entry</validate>
-                        <comment><![CDATA[Detector id.]]></comment>
+                        <comment><![CDATA[The Fraud Detector detector id we have configured in the AWS console.]]></comment>
                         <depends>
                             <field id="api_enabled">1</field>
                         </depends>
@@ -40,7 +40,7 @@
                         <label>Score Name</label>
                         <config_path>trust_and_safety/transom_aws_fraud_detector/score_name</config_path>
                         <validate>required-entry</validate>
-                        <comment><![CDATA[Score name.]]></comment>
+                        <comment><![CDATA[The Fraud Detector outcome score name we have configured in the AWS console.]]></comment>
                         <depends>
                             <field id="api_enabled">1</field>
                         </depends>
@@ -67,7 +67,7 @@
                 </group>
                 <group id="order_status_config" translate="label comment" sortOrder="14" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Order Status</label>
-                    <comment><![CDATA[In this section you can enable or disable urder status updates, and set outcome thresholds.]]></comment>
+                    <comment><![CDATA[In this section you can enable or disable order status updates, and set outcome thresholds.]]></comment>
 
                     <field id="updateOrderStatus" translate="label comment" sortOrder="10" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Update Order Status</label>
@@ -94,6 +94,63 @@
                         <config_path>trust_and_safety/transom_aws_fraud_detector/review_threshold</config_path>
                         <validate>validate-number-range number-range-0-1000</validate>
                         <comment><![CDATA[Outcome threshold for orders that are may be fraudulent and will be reviewed.  The threshold is a number between 0 and 1000.]]></comment>
+                        <depends>
+                            <field id="trust_and_safety/transom_aws/api_config/api_enabled">1</field>
+                        </depends>
+                    </field>
+                </group>
+                <group id="advanced_config" translate="label comment" sortOrder="14" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Advanced Fraud Detector Settings</label>
+
+                    <field id="event_type_name" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Event Type Name Configured in the AWS Fraud Detector Console</label>
+                        <config_path>trust_and_safety/transom_aws_fraud_detector/event_type_name</config_path>
+                        <validate>required-entry</validate>
+                        <depends>
+                            <field id="trust_and_safety/transom_aws/api_config/api_enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="rule_id_review" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Rule Id Returned from Detector for Review Decision</label>
+                        <config_path>trust_and_safety/transom_aws_fraud_detector/rule_id_review</config_path>
+                        <validate>required-entry</validate>
+                        <depends>
+                            <field id="trust_and_safety/transom_aws/api_config/api_enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="rule_id_cancel" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Rule Id Returned from Detector for Cancel Decision</label>
+                        <config_path>trust_and_safety/transom_aws_fraud_detector/rule_id_cancel</config_path>
+                        <validate>required-entry</validate>
+                        <depends>
+                            <field id="trust_and_safety/transom_aws/api_config/api_enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="outcome_legit" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Outcome String for Legit Orders</label>
+                        <config_path>trust_and_safety/transom_aws_fraud_detector/outcome_legit</config_path>
+                        <validate>required-entry</validate>
+                        <depends>
+                            <field id="trust_and_safety/transom_aws/api_config/api_enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="outcome_review" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Outcome String for Orders the need to be Reviewed</label>
+                        <config_path>trust_and_safety/transom_aws_fraud_detector/outcome_review</config_path>
+                        <validate>required-entry</validate>
+                        <depends>
+                            <field id="trust_and_safety/transom_aws/api_config/api_enabled">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="outcome_cancel" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Outcome String for Orders that will be Canceled</label>
+                        <config_path>trust_and_safety/transom_aws_fraud_detector/outcome_cancel</config_path>
+                        <validate>required-entry</validate>
                         <depends>
                             <field id="trust_and_safety/transom_aws/api_config/api_enabled">1</field>
                         </depends>
