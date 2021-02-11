@@ -49,9 +49,9 @@ class OrderManager {
         // update order status
         if ($outcome == $this->config->getOutcomeLegit()) {
             if ($localDebug) {
-                $this->logger->info(' ### In updateOrderStatus(); Order is legit.');
+                $this->logger->info(' ### In updateOrderStatus(); Order is legitimate.');
             }
-            $order->addStatusToHistory($order->getStatus(), 'Legit order, AWS insight score [' . $scoreName . ']: '.$insightScore, false);
+            $order->addStatusToHistory($order->getStatus(), 'Legitimate order, AWS insight score [' . $scoreName . ']: '.$insightScore, false);
         } else if ($outcome == $this->config->getOutcomeReview()) {
             if ($this->config->isUpdateOrderStatus()) {
                 if ($localDebug) {
@@ -71,11 +71,11 @@ class OrderManager {
         } else if ($outcome == $this->config->getOutcomeCancel()) {
             if ($this->config->isUpdateOrderStatus()) {
                 if ($localDebug) {
-                    $this->logger->info(' ### In updateOrderStatus(); Order is cacelled. Updating order status and adding status note.');
+                    $this->logger->info(' ### In updateOrderStatus(); Order is cancelled. Updating order status and adding status note.');
                 }
                 $order->setState(Order::STATE_CANCELED);
                 $order->setStatus(Order::STATUS_FRAUD);
-                $order->addStatusToHistory(Order::STATUS_FRAUD, 'Order is cacelled. Setting order status to suspected fraud and state cancel.  AWS insight score [' . $scoreName . ']: ' . $insightScore . ';' . $thresholdInfo, false);
+                $order->addStatusToHistory(Order::STATUS_FRAUD, 'Order is cancelled. Setting order status to suspected fraud and state cancel.  AWS insight score [' . $scoreName . ']: ' . $insightScore . ';' . $thresholdInfo, false);
             } else {
                 if ($localDebug) {
                     $this->logger->info(' ### In updateOrderStatus(); Order would have been cancelled. Only adding status note.');

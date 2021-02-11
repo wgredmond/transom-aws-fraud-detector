@@ -56,8 +56,8 @@ class OrderObserver implements ObserverInterface
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
-        //$localDebug = true;
-        $localDebug = false;
+        $localDebug = true;
+        //$localDebug = false;
 
         $eventName = $observer->getEvent()->getName();
 

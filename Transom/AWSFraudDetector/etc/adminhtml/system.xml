@@ -79,8 +79,10 @@
                         </depends>
                     </field>
 
+                    <!-- TODO: restore after fully testing rule updates
                     <field id="cancelThreshold" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
-                        <label>Cancel Thrshold</label>
+                        <label>Cancel Threshold</label>
+                        <attribute type="disabled">1</attribute>
                         <config_path>trust_and_safety/transom_aws_fraud_detector/cancel_threshold</config_path>
                         <validate>validate-number-range number-range-0-1000</validate>
                         <comment><![CDATA[Outcome threshold for orders that are fraudulent and will be canceled.  The threshold is a number between 0 and 1000.]]></comment>
@@ -91,6 +93,7 @@
 
                     <field id="reviewThreshold" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Review Threshold</label>
+                        <attribute type="disabled">1</attribute>
                         <config_path>trust_and_safety/transom_aws_fraud_detector/review_threshold</config_path>
                         <validate>validate-number-range number-range-0-1000</validate>
                         <comment><![CDATA[Outcome threshold for orders that are may be fraudulent and will be reviewed.  The threshold is a number between 0 and 1000.]]></comment>
@@ -98,6 +101,8 @@
                             <field id="trust_and_safety/transom_aws/api_config/api_enabled">1</field>
                         </depends>
                     </field>
+                    -->
+
                 </group>
                 <group id="advanced_config" translate="label comment" sortOrder="14" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Advanced Fraud Detector Settings</label>
@@ -130,7 +135,7 @@
                     </field>
 
                     <field id="outcome_legit" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
-                        <label>Outcome String for Legit Orders</label>
+                        <label>Outcome String for Legitimate Orders</label>
                         <config_path>trust_and_safety/transom_aws_fraud_detector/outcome_legit</config_path>
                         <validate>required-entry</validate>
                         <depends>

@@ -147,7 +147,7 @@ class ConfigSettings
 
 
     /**
-     * Outcome Legit
+     * Outcome Legitimate
      *
      * @param int|null $storeId
      * @return string
@@ -283,7 +283,7 @@ class ConfigSettings
     public function getEventTypeName($storeId = null)
     {
         $eventTypeName = $this->scopeConfig->getValue(
-            'trust_and_safety/transom_aws_fraud_detector/event_type_namee',
+            'trust_and_safety/transom_aws_fraud_detector/event_type_name',
             ScopeInterface::SCOPE_STORE,
             $storeId
         );

@@ -39,7 +39,7 @@ class AdminConfigChange implements ObserverInterface
     {
         $eventName = $observer->getEvent()->getName();
         if ($eventName === 'admin_system_config_changed_section_trust_and_safety') {
-            $this->api->updateRule();
+            $this->api->updateRules();
         }
     }
 }
